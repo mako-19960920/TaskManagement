@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>タスクボード</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <h1>マイボード</h1>
+  </header>
+
+  <main class="board">
+    <section class="list">
+      <h2 class="list-title">やること</h2>
+      <ul class="cards" id="todo-cards">
+        <li class="card">
+          <div class="card-top">
+            <span class="card-text">買い物リストを作る</span>
+            <button class="delete-button" type="button">削除</button>
+          </div>
+        </li>
+        <li class="card">
+          <div class="card-top">
+            <span class="card-text">メールを返す</span>
+            <button class="delete-button" type="button">削除</button>
+          </div>
+        </li>
+      </ul>
+      <form class="add-form" id="add-form">
+        <input class="add-input" id="add-input" type="text" placeholder="カードを追加" required>
+        <input class="add-date" id="add-date" type="date" aria-label="日付">
+        <button class="add-button" type="submit">追加</button>
+      </form>
+    </section>
+
+    <section class="list">
+      <h2 class="list-title">進行中</h2>
+      <ul class="cards" id="doing-cards">
+        <li class="card">
+          <div class="card-top">
+            <span class="card-text">企画書の下書き</span>
+            <button class="delete-button" type="button">削除</button>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="list">
+      <h2 class="list-title">完了</h2>
+      <ul class="cards" id="done-cards">
+        <li class="card">
+          <div class="card-top">
+            <span class="card-text">会議室を予約する</span>
+            <button class="delete-button" type="button">削除</button>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
