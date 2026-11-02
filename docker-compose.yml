@@ -6,9 +6,14 @@ services:
       POSTGRES_USER: taskboard
       POSTGRES_PASSWORD: taskboard
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - taskboard-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskboard -d taskboard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   taskboard-db:

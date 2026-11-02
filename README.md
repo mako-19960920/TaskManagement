@@ -14,7 +14,7 @@ Trelloのように、カードを列のあいだで動かすタスク管理ア�
 
 ## 起動
 
-PostgreSQL に、データベース `taskboard`、ユーザー `taskboard`、パスワード `taskboard` を用意する。Docker がある場合は、`TaskManagement` で次を実行する。
+PostgreSQL は Docker で起動する。データベース名、ユーザー、パスワードはいずれも `taskboard` で、この PC のポートは 5433 である。`TaskManagement` で次を実行する。
 
 ```
 docker compose up -d
