@@ -14,6 +14,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.taskmanagement.service.InvalidSearchConditionException;
 import com.taskmanagement.service.InvalidTaskStatusException;
 import com.taskmanagement.service.TaskNotFoundException;
 import com.taskmanagement.service.TaskService;
@@ -69,6 +70,30 @@ class TaskControllerTest {
 		when(taskService.findByStatus("later")).thenThrow(new InvalidTaskStatusException("later"));
 
 		mockMvc.perform(get("/api/tasks/status/later"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void searchPassesConditionsToService() throws Exception {
+		when(taskService.search("api", "todo", "high", "2026-11-01", "2026-11-30"))
+				.thenReturn(List.of(sample(9L, "API の設計書を書く", "todo")));
+
+		mockMvc.perform(get("/api/tasks/search")
+				.param("keyword", "api")
+				.param("status", "todo")
+				.param("priority", "high")
+				.param("dueFrom", "2026-11-01")
+				.param("dueTo", "2026-11-30"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].title").value("API の設計書を書く"));
+	}
+
+	@Test
+	void searchWithInvalidConditionReturnsBadRequest() throws Exception {
+		when(taskService.search(null, null, "urgent", null, null))
+				.thenThrow(new InvalidSearchConditionException("priority", "urgent"));
+
+		mockMvc.perform(get("/api/tasks/search").param("priority", "urgent"))
 				.andExpect(status().isBadRequest());
 	}
 
