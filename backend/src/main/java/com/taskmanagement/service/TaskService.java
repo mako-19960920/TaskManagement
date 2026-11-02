@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import com.taskmanagement.entity.Priority;
 import com.taskmanagement.entity.Task;
 import com.taskmanagement.entity.TaskStatus;
 import com.taskmanagement.repository.TaskRepository;
+import com.taskmanagement.repository.TaskSpecifications;
 
 @Service
 public class TaskService {
@@ -36,14 +38,66 @@ public class TaskService {
 		this.taskRepository = taskRepository;
 	}
 
+	private static final Comparator<Task> BOARD_ORDER = Comparator
+			.comparingInt((Task task) -> STATUS_ORDER.indexOf(task.getStatus()))
+			.thenComparingInt(Task::getPosition);
+
 	@Transactional(readOnly = true)
 	public List<TaskResponse> findAll() {
 		return taskRepository.findAll().stream()
-				.sorted(Comparator
-						.comparingInt((Task task) -> STATUS_ORDER.indexOf(task.getStatus()))
-						.thenComparingInt(Task::getPosition))
+				.sorted(BOARD_ORDER)
 				.map(task -> toResponse(task, null))
 				.toList();
+	}
+
+	/** 指定された条件をすべて満たすタスクを、ボードと同じ並びで返す。空の条件は使わない。 */
+	@Transactional(readOnly = true)
+	public List<TaskResponse> search(String keyword, String status, String priority, String dueFrom, String dueTo) {
+		String word = blankToNull(keyword);
+		TaskStatus parsedStatus = blankToNull(status) == null ? null : parseStatus(status.strip());
+		Priority parsedPriority = parseSearchPriority(blankToNull(priority));
+		LocalDate from = parseSearchDate("dueFrom", blankToNull(dueFrom));
+		LocalDate to = parseSearchDate("dueTo", blankToNull(dueTo));
+		if (from != null && to != null && from.isAfter(to)) {
+			throw new InvalidSearchConditionException("dueFrom", dueFrom + " > dueTo " + dueTo);
+		}
+		Specification<Task> spec = Specification.allOf(
+				TaskSpecifications.keyword(word),
+				TaskSpecifications.status(parsedStatus),
+				TaskSpecifications.priority(parsedPriority),
+				TaskSpecifications.dueFrom(from),
+				TaskSpecifications.dueTo(to));
+		return taskRepository.findAll(spec).stream()
+				.sorted(BOARD_ORDER)
+				.map(task -> toResponse(task, null))
+				.toList();
+	}
+
+	private String blankToNull(String value) {
+		return value == null || value.isBlank() ? null : value.strip();
+	}
+
+	private Priority parseSearchPriority(String value) {
+		if (value == null) {
+			return null;
+		}
+		try {
+			return Priority.from(value);
+		}
+		catch (IllegalArgumentException exception) {
+			throw new InvalidSearchConditionException("priority", value);
+		}
+	}
+
+	private LocalDate parseSearchDate(String name, String value) {
+		if (value == null) {
+			return null;
+		}
+		LocalDate date = parseDate(value);
+		if (date == null) {
+			throw new InvalidSearchConditionException(name, value);
+		}
+		return date;
 	}
 
 	@Transactional(readOnly = true)
