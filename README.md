@@ -55,4 +55,19 @@ npm run dev
 - **進行中** … 今やっているタスク
 - **完了** … 終わったタスク
 
+## テスト
+
+```
+cd backend
+gradlew.bat test
+```
+
+## 設計書
+
+| ファイル | 内容 |
+| --- | --- |
+| [要件定義.md](要件定義.md) | 何を作るか（画面、機能、非機能、技術選定）を詳しく書いたもの |
+| [基本設計.md](基本設計.md) | 見た目の数値、入力チェック、ドラッグ、API の JSON |
+| [docs/](docs/) | 上の2つの要約と、テーブル定義（[database-design.md](docs/database-design.md)） |
+
 `prototype/index.html`、`prototype/style.css`、`prototype/script.js` は、サーバーへ保存する前の静的な試作です。
