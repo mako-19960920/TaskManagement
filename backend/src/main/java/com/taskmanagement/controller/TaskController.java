@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.taskmanagement.service.TaskService;
@@ -29,6 +30,16 @@ public class TaskController {
 	@GetMapping("/status/{status}")
 	public List<TaskResponse> findByStatus(@PathVariable String status) {
 		return taskService.findByStatus(status);
+	}
+
+	@GetMapping("/search")
+	public List<TaskResponse> search(
+			@RequestParam(required = false) String keyword,
+			@RequestParam(required = false) String status,
+			@RequestParam(required = false) String priority,
+			@RequestParam(required = false) String dueFrom,
+			@RequestParam(required = false) String dueTo) {
+		return taskService.search(keyword, status, priority, dueFrom, dueTo);
 	}
 
 	@GetMapping("/{id}")
