@@ -7,7 +7,7 @@ Trelloのように、カードを列のあいだで動かすタスク管理ア�
 | 層 | 採用 |
 | --- | --- |
 | フロントエンド | React（Vite） |
-| バックエンド | Java 21、Spring Boot |
+| バックエンド | Java 21、Spring Boot、Gradle |
 | データベース | PostgreSQL |
 
 ログインはしない。ボードは1つで、このサーバーを開くブラウザは同じボードを見る。
@@ -24,7 +24,7 @@ docker compose up -d
 
 ```
 cd backend
-mvnw.cmd spring-boot:run
+gradlew.bat bootRun
 ```
 
 フロントエンド:
@@ -54,4 +54,4 @@ npm run dev
 - **進行中** … 今やっているタスク
 - **完了** … 終わったタスク
 
-`index.html`、`style.css`、`script.js` は、サーバーへ保存する前の静的な試作です。
+`prototype/index.html`、`prototype/style.css`、`prototype/script.js` は、サーバーへ保存する前の静的な試作です。

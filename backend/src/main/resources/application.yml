@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: taskmanagement
+  datasource:
+    url: jdbc:postgresql://localhost:5433/taskboard
+    username: taskboard
+    password: taskboard
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+
+server:
+  port: 8080
