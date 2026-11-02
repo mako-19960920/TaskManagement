@@ -121,3 +121,19 @@ export async function saveBoard(board) {
   const saved = await response.json();
   return { columns: columnsFromTasks(saved) };
 }
+
+export async function searchBoard(conditions) {
+  const params = new URLSearchParams();
+  for (const [name, value] of Object.entries(conditions)) {
+    const text = typeof value === "string" ? value.trim() : "";
+    if (text !== "") {
+      params.set(name, text);
+    }
+  }
+  const response = await fetch(`/api/tasks/search?${params}`);
+  if (!response.ok) {
+    throw new Error("search failed");
+  }
+  const tasks = await response.json();
+  return { columns: columnsFromTasks(tasks), count: Array.isArray(tasks) ? tasks.length : 0 };
+}
