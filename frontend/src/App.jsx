@@ -56,6 +56,18 @@ function moveCard(board, key, targetId, beforeKey) {
   return next;
 }
 
+function findBoardKey(board, target) {
+  for (const column of columns) {
+    const found = board[column.id].find((card) =>
+      target.id != null ? card.id === target.id : card.key === target.key
+    );
+    if (found) {
+      return found.key;
+    }
+  }
+  return null;
+}
+
 function cardAfterCursor(list, y, draggingKey) {
   const cards = [...list.querySelectorAll(".card")].filter((card) => card.dataset.key !== draggingKey);
   for (const card of cards) {
@@ -87,6 +99,8 @@ export default function App() {
   const [searchError, setSearchError] = useState("");
   const searching = result !== null;
   const shown = searching ? result.columns : board;
+  const resultRef = useRef(null);
+  resultRef.current = result;
 
   function changeCondition(name, value) {
     setConditions((current) => ({ ...current, [name]: value }));
@@ -197,13 +211,34 @@ export default function App() {
       if (list) {
         const cards = list.querySelector(".cards");
         const after = cardAfterCursor(cards, event.clientY, dragging.key);
-        const next = moveCard(
-          boardRef.current,
-          dragging.key,
-          list.dataset.column,
-          after?.dataset.key ?? null
-        );
-        persistRef.current(next);
+        const targetId = list.dataset.column;
+        const beforeKey = after?.dataset.key ?? null;
+        const current = resultRef.current;
+        if (current) {
+          // 検索中: 検索結果の表示を動かし、ボード側の同じカード（id で探す）も移動・保存する
+          let card = null;
+          for (const column of columns) {
+            card = card ?? current.columns[column.id].find((item) => item.key === dragging.key);
+          }
+          if (card) {
+            const before = beforeKey
+              ? columns
+                  .flatMap((column) => current.columns[column.id])
+                  .find((item) => item.key === beforeKey)
+              : null;
+            const boardKey = findBoardKey(boardRef.current, card);
+            const boardBefore = before ? findBoardKey(boardRef.current, before) : null;
+            if (boardKey) {
+              persistRef.current(moveCard(boardRef.current, boardKey, targetId, boardBefore));
+            }
+            setResult({
+              ...current,
+              columns: moveCard(current.columns, dragging.key, targetId, beforeKey),
+            });
+          }
+        } else {
+          persistRef.current(moveCard(boardRef.current, dragging.key, targetId, beforeKey));
+        }
       }
       draggingRef.current = null;
       setDraggingKey(null);
@@ -227,7 +262,7 @@ export default function App() {
   }, []);
 
   function onPointerDown(event) {
-    if (searching || event.button !== 0 || event.target.closest("button, input")) {
+    if (event.button !== 0 || event.target.closest("button, input")) {
       return;
     }
     event.preventDefault();
@@ -245,8 +280,19 @@ export default function App() {
     persist(next);
   }
 
-  function moveToEnd(key, targetId) {
-    persist(moveCard(boardRef.current, key, targetId, null));
+  function moveToEnd(card, targetId) {
+    if (!searching) {
+      persist(moveCard(boardRef.current, card.key, targetId, null));
+      return;
+    }
+    // 検索中: ボード側の同じカードを id で探して移動・保存し、検索結果の表示も動かす
+    const boardKey = findBoardKey(boardRef.current, card);
+    if (boardKey) {
+      persist(moveCard(boardRef.current, boardKey, targetId, null));
+    }
+    setResult((current) =>
+      current ? { ...current, columns: moveCard(current.columns, card.key, targetId, null) } : current
+    );
   }
 
   function changeDate(key, date) {
@@ -344,7 +390,7 @@ export default function App() {
         <p className="search-status">
           {result.count === 0
             ? "該当するタスクはありません"
-            : `検索結果：${result.count}件（検索中は閲覧のみです）`}
+            : `検索結果：${result.count}件（検索中は列の移動のみできます）`}
         </p>
       ) : null}
       {searchError ? <p className="board-error">{searchError}</p> : null}
@@ -394,19 +440,22 @@ export default function App() {
                       </button>
                       )}
                     </div>
-                    <div className="card-moves" hidden={searching}>
-                      {columns.map((target) => (
-                        <button
-                          className="move-button"
-                          type="button"
-                          key={target.id}
-                          hidden={target.id === column.id}
-                          onClick={() => moveToEnd(card.key, target.id)}
-                        >
-                          {moveLabels[target.id]}
-                        </button>
-                      ))}
-                    </div>
+                    {(
+                      <div className="card-moves">
+                        {columns
+                          .filter((target) => target.id !== column.id)
+                          .map((target) => (
+                            <button
+                              className="move-button"
+                              type="button"
+                              key={target.id}
+                              onClick={() => moveToEnd(card, target.id)}
+                            >
+                              {moveLabels[target.id]}
+                            </button>
+                          ))}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
