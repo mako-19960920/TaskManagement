@@ -6,7 +6,7 @@ Trelloのように、カードを列のあいだで動かすタスク管理ア�
 
 | 層 | 採用 |
 | --- | --- |
-| フロントエンド | React（Vite） |
+| フロントエンド | React + TypeScript（Vite） |
 | バックエンド | Java 21、Spring Boot、Gradle |
 | データベース | PostgreSQL |
 

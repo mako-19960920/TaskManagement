@@ -4,7 +4,7 @@
 | --- | --- |
 | バックエンド | Java 21、Spring Boot、Gradle |
 | パッケージ | `com.taskmanagement` |
-| フロントエンド | React（Vite） |
+| フロントエンド | React + TypeScript（Vite） |
 | データベース | PostgreSQL 17（Docker、ホストの 5433） |
 | 読み取り | `GET /api/tasks`、`GET /api/tasks/{id}`、`GET /api/tasks/status/{status}`、`GET /api/tasks/search` |
 | 画面からの保存 | `PUT /api/tasks` |
