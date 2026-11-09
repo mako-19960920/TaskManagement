@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { FormEvent, PointerEvent as ReactPointerEvent } from "react";
 import {
   cardsFromResponse,
   emptyBoard,
@@ -7,23 +8,24 @@ import {
   saveBoard,
   searchBoard,
   validDate,
-} from "./api.js";
+} from "./api";
+import type { Board, Card, ColumnId, SearchConditions, SearchResult } from "./api";
 
-const columns = [
+const columns: { id: ColumnId; title: string }[] = [
   { id: "todo-cards", title: "やること" },
   { id: "doing-cards", title: "進行中" },
   { id: "done-cards", title: "完了" },
 ];
 
-const moveLabels = {
+const moveLabels: Record<ColumnId, string> = {
   "todo-cards": "やることへ",
   "doing-cards": "進行中へ",
   "done-cards": "完了へ",
 };
 
-const emptyConditions = { keyword: "", status: "", priority: "", dueFrom: "", dueTo: "" };
+const emptyConditions: SearchConditions = { keyword: "", status: "", priority: "", dueFrom: "", dueTo: "" };
 
-function formatCardDate(value) {
+function formatCardDate(value: string): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) {
     return "";
@@ -31,8 +33,8 @@ function formatCardDate(value) {
   return `${match[1]}年${Number(match[2])}月${Number(match[3])}日`;
 }
 
-function moveCard(board, key, targetId, beforeKey) {
-  let moving = null;
+function moveCard(board: Board, key: string, targetId: ColumnId, beforeKey: string | null): Board {
+  let moving: Card | null = null as Card | null;
   const next = emptyBoard();
   for (const column of columns) {
     next[column.id] = board[column.id].filter((card) => {
@@ -56,7 +58,7 @@ function moveCard(board, key, targetId, beforeKey) {
   return next;
 }
 
-function findBoardKey(board, target) {
+function findBoardKey(board: Board, target: Card): string | null {
   for (const column of columns) {
     const found = board[column.id].find((card) =>
       target.id != null ? card.id === target.id : card.key === target.key
@@ -68,8 +70,8 @@ function findBoardKey(board, target) {
   return null;
 }
 
-function cardAfterCursor(list, y, draggingKey) {
-  const cards = [...list.querySelectorAll(".card")].filter((card) => card.dataset.key !== draggingKey);
+function cardAfterCursor(list: Element, y: number, draggingKey: string): HTMLElement | null {
+  const cards = [...list.querySelectorAll<HTMLElement>(".card")].filter((card) => card.dataset.key !== draggingKey);
   for (const card of cards) {
     const box = card.getBoundingClientRect();
     const middle = box.top + box.height / 2;
@@ -81,32 +83,32 @@ function cardAfterCursor(list, y, draggingKey) {
 }
 
 export default function App() {
-  const [board, setBoard] = useState(emptyBoard);
+  const [board, setBoard] = useState<Board>(emptyBoard);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
   const [draft, setDraft] = useState("");
   const [draftDate, setDraftDate] = useState("");
-  const [draggingKey, setDraggingKey] = useState(null);
-  const [dropTarget, setDropTarget] = useState(null);
+  const [draggingKey, setDraggingKey] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<ColumnId | null>(null);
   const boardRef = useRef(board);
-  const draggingRef = useRef(null);
-  const persistRef = useRef(() => {});
+  const draggingRef = useRef<{ key: string; element: HTMLElement } | null>(null);
+  const persistRef = useRef<(next: Board) => void>(() => {});
   const savingRef = useRef(false);
   const dirtyRef = useRef(false);
-  const addInputRef = useRef(null);
+  const addInputRef = useRef<HTMLInputElement>(null);
   const [conditions, setConditions] = useState(emptyConditions);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<SearchResult | null>(null);
   const [searchError, setSearchError] = useState("");
   const searching = result !== null;
   const shown = searching ? result.columns : board;
-  const resultRef = useRef(null);
+  const resultRef = useRef<SearchResult | null>(null);
   resultRef.current = result;
 
-  function changeCondition(name, value) {
+  function changeCondition(name: keyof SearchConditions, value: string) {
     setConditions((current) => ({ ...current, [name]: value }));
   }
 
-  async function onSearch(event) {
+  async function onSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
       const data = await searchBoard(conditions);
@@ -123,7 +125,7 @@ export default function App() {
     setSearchError("");
   }
 
-  function persist(next) {
+  function persist(next: Board) {
     boardRef.current = next;
     setBoard(next);
     dirtyRef.current = true;
@@ -182,7 +184,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    function listAtPoint(x, y) {
+    function listAtPoint(x: number, y: number): HTMLElement | null {
       const element = draggingRef.current?.element;
       if (element) {
         element.style.pointerEvents = "none";
@@ -191,34 +193,34 @@ export default function App() {
       if (element) {
         element.style.pointerEvents = "";
       }
-      return hit ? hit.closest(".list") : null;
+      return hit ? hit.closest<HTMLElement>(".list") : null;
     }
 
-    function onMove(event) {
+    function onMove(event: PointerEvent) {
       if (!draggingRef.current) {
         return;
       }
       const list = listAtPoint(event.clientX, event.clientY);
-      setDropTarget(list ? list.dataset.column : null);
+      setDropTarget(list ? (list.dataset.column as ColumnId) : null);
     }
 
-    function finish(event) {
+    function finish(event: PointerEvent) {
       const dragging = draggingRef.current;
       if (!dragging) {
         return;
       }
       const list = event ? listAtPoint(event.clientX, event.clientY) : null;
       if (list) {
-        const cards = list.querySelector(".cards");
+        const cards = list.querySelector(".cards")!;
         const after = cardAfterCursor(cards, event.clientY, dragging.key);
-        const targetId = list.dataset.column;
+        const targetId = list.dataset.column as ColumnId;
         const beforeKey = after?.dataset.key ?? null;
         const current = resultRef.current;
         if (current) {
           // 検索中: 検索結果の表示を動かし、ボード側の同じカード（id で探す）も移動・保存する
-          let card = null;
+          let card: Card | null = null;
           for (const column of columns) {
-            card = card ?? current.columns[column.id].find((item) => item.key === dragging.key);
+            card = card ?? current.columns[column.id].find((item) => item.key === dragging.key) ?? null;
           }
           if (card) {
             const before = beforeKey
@@ -261,18 +263,19 @@ export default function App() {
     };
   }, []);
 
-  function onPointerDown(event) {
-    if (event.button !== 0 || event.target.closest("button, input")) {
+  function onPointerDown(event: ReactPointerEvent<HTMLLIElement>) {
+    if (event.button !== 0 || (event.target as HTMLElement).closest("button, input")) {
       return;
     }
     event.preventDefault();
     const card = event.currentTarget;
-    draggingRef.current = { key: card.dataset.key, element: card };
-    setDraggingKey(card.dataset.key);
+    const key = card.dataset.key!;
+    draggingRef.current = { key, element: card };
+    setDraggingKey(key);
     card.setPointerCapture(event.pointerId);
   }
 
-  function deleteCard(key) {
+  function deleteCard(key: string) {
     const next = emptyBoard();
     for (const column of columns) {
       next[column.id] = boardRef.current[column.id].filter((card) => card.key !== key);
@@ -280,7 +283,7 @@ export default function App() {
     persist(next);
   }
 
-  function moveToEnd(card, targetId) {
+  function moveToEnd(card: Card, targetId: ColumnId) {
     if (!searching) {
       persist(moveCard(boardRef.current, card.key, targetId, null));
       return;
@@ -295,7 +298,7 @@ export default function App() {
     );
   }
 
-  function changeDate(key, date) {
+  function changeDate(key: string, date: string) {
     const valid = validDate(date) ? date : "";
     const next = emptyBoard();
     for (const column of columns) {
@@ -306,13 +309,13 @@ export default function App() {
     persist(next);
   }
 
-  function onAdd(event) {
+  function onAdd(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = draft.trim();
     if (text === "") {
       return;
     }
-    const card = {
+    const card: Card = {
       id: null,
       key: crypto.randomUUID(),
       text,

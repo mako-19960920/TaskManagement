@@ -1,18 +1,61 @@
-const columnIds = ["todo-cards", "doing-cards", "done-cards"];
+// 画面の3列の id
+export type ColumnId = "todo-cards" | "doing-cards" | "done-cards";
 
-const statusToColumn = {
+// API の status
+export type TaskStatus = "todo" | "in_progress" | "done";
+
+// 画面で扱うカード
+export type Card = {
+  id: number | null;
+  key: string;
+  text: string;
+  date: string;
+};
+
+// 3列ぶんのカード
+export type Board = Record<ColumnId, Card[]>;
+
+// API が返すタスク（GET /api/tasks など）
+export type TaskResponse = {
+  id: number | null;
+  title: string;
+  description?: string | null;
+  priority?: string | null;
+  dueDate: string | null;
+  status: string;
+  position?: number;
+  key?: string;
+};
+
+// 検索の条件（すべて省略できる）
+export type SearchConditions = {
+  keyword: string;
+  status: string;
+  priority: string;
+  dueFrom: string;
+  dueTo: string;
+};
+
+export type SearchResult = {
+  columns: Board;
+  count: number;
+};
+
+export const columnIds: ColumnId[] = ["todo-cards", "doing-cards", "done-cards"];
+
+const statusToColumn: Record<string, ColumnId | undefined> = {
   todo: "todo-cards",
   in_progress: "doing-cards",
   done: "done-cards",
 };
 
-const columnToStatus = {
+const columnToStatus: Record<ColumnId, TaskStatus> = {
   "todo-cards": "todo",
   "doing-cards": "in_progress",
   "done-cards": "done",
 };
 
-export function emptyBoard() {
+export function emptyBoard(): Board {
   return {
     "todo-cards": [],
     "doing-cards": [],
@@ -20,13 +63,13 @@ export function emptyBoard() {
   };
 }
 
-export function validDate(value) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+export function validDate(value: unknown): value is string {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
-export function columnsFromTasks(tasks) {
+export function columnsFromTasks(tasks: unknown): Board {
   const board = emptyBoard();
-  const items = Array.isArray(tasks) ? tasks : [];
+  const items: TaskResponse[] = Array.isArray(tasks) ? tasks : [];
   const sorted = items
     .filter((item) => item && typeof item.title === "string")
     .sort((left, right) => (left.position ?? 0) - (right.position ?? 0));
@@ -45,12 +88,13 @@ export function columnsFromTasks(tasks) {
   return board;
 }
 
-export function cardsFromResponse(columns) {
+export function cardsFromResponse(columns: Partial<Record<ColumnId, unknown>> | undefined): Board {
   const board = emptyBoard();
   for (const id of columnIds) {
-    const items = Array.isArray(columns?.[id]) ? columns[id] : [];
+    const raw = columns?.[id];
+    const items: Partial<Card>[] = Array.isArray(raw) ? raw : [];
     board[id] = items
-      .filter((item) => item && typeof item.text === "string")
+      .filter((item): item is Partial<Card> & { text: string } => !!item && typeof item.text === "string")
       .map((item) => ({
         id: item.id ?? null,
         key: item.key || String(item.id),
@@ -61,11 +105,10 @@ export function cardsFromResponse(columns) {
   return board;
 }
 
-export function mergeIds(board, saved) {
-  const ids = new Map();
+export function mergeIds(board: Board, saved: { columns: Board }): Board {
+  const ids = new Map<string, number | null>();
   for (const id of columnIds) {
-    const items = Array.isArray(saved.columns?.[id]) ? saved.columns[id] : [];
-    for (const item of items) {
+    for (const item of saved.columns[id]) {
       if (item && item.key) {
         ids.set(item.key, item.id);
       }
@@ -77,23 +120,23 @@ export function mergeIds(board, saved) {
       if (!ids.has(card.key)) {
         return card;
       }
-      return { ...card, id: ids.get(card.key) };
+      return { ...card, id: ids.get(card.key) ?? null };
     });
   }
   return next;
 }
 
-export async function fetchBoard() {
+export async function fetchBoard(): Promise<{ columns: Board }> {
   const response = await fetch("/api/tasks");
   if (!response.ok) {
     throw new Error("load failed");
   }
-  const tasks = await response.json();
+  const tasks: unknown = await response.json();
   return { columns: columnsFromTasks(tasks) };
 }
 
-export async function saveBoard(board) {
-  const tasks = [];
+export async function saveBoard(board: Board): Promise<{ columns: Board }> {
+  const tasks: TaskResponse[] = [];
   for (const id of columnIds) {
     board[id].forEach((card, position) => {
       const title = typeof card.text === "string" ? card.text.trim() : "";
@@ -118,11 +161,11 @@ export async function saveBoard(board) {
   if (!response.ok) {
     throw new Error("save failed");
   }
-  const saved = await response.json();
+  const saved: unknown = await response.json();
   return { columns: columnsFromTasks(saved) };
 }
 
-export async function searchBoard(conditions) {
+export async function searchBoard(conditions: SearchConditions): Promise<SearchResult> {
   const params = new URLSearchParams();
   for (const [name, value] of Object.entries(conditions)) {
     const text = typeof value === "string" ? value.trim() : "";
@@ -134,6 +177,6 @@ export async function searchBoard(conditions) {
   if (!response.ok) {
     throw new Error("search failed");
   }
-  const tasks = await response.json();
+  const tasks: unknown = await response.json();
   return { columns: columnsFromTasks(tasks), count: Array.isArray(tasks) ? tasks.length : 0 };
 }
