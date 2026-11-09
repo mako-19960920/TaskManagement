@@ -1,2 +1,9 @@
 node_modules
 dist
+
+# Vite が作るキャッシュと一時ファイル（起動のたびに作り直されるので管理しない）
+.vite/
+*.timestamp-*.mjs
+
+# TypeScript の差分ビルド用ファイル
+*.tsbuildinfo
