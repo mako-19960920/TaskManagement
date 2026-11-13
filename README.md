@@ -221,9 +221,21 @@ TaskManagement/
 │   ├── vite.config.ts      … ポートと /api の転送の設定
 │   └── src/
 │       ├── main.tsx         … 画面の入口
-│       ├── App.tsx          … ボード、カード、検索フォーム
+│       ├── App.tsx          … 画面全体。部品と hooks を組み合わせ、検索中の移動をまとめる
 │       ├── App.css          … 見た目
-│       └── api.ts           … API の呼び出しと型
+│       ├── components/      … 画面の部品
+│       │   ├── SearchForm.tsx  … 検索フォーム
+│       │   ├── Board.tsx       … 3列を横に並べる
+│       │   ├── Column.tsx      … 列1つ
+│       │   ├── TaskCard.tsx    … カード1枚（日付、削除、移動）
+│       │   └── AddCardForm.tsx … やることの追加欄
+│       ├── hooks/           … 画面の状態と動き
+│       │   ├── useBoard.ts     … ボードの読み込みと保存（書き込みは1つずつ順番に送る）
+│       │   ├── useSearch.ts    … 検索の条件と結果
+│       │   └── useCardDrag.ts  … カードのドラッグ
+│       ├── api/taskApi.ts   … API の呼び出し
+│       ├── lib/board.ts     … ボードを組み替える処理（React に依存しない）
+│       └── types/task.ts    … 型
 └── prototype/              … サーバーへ保存する前の静的な試作（HTML / CSS / JS）
 ```
 
