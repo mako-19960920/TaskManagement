@@ -1,7 +1,10 @@
 package com.taskmanagement.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -11,10 +14,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.taskmanagement.service.InvalidSearchConditionException;
+import com.taskmanagement.service.InvalidTaskException;
 import com.taskmanagement.service.InvalidTaskStatusException;
 import com.taskmanagement.service.TaskNotFoundException;
 import com.taskmanagement.service.TaskService;
@@ -94,6 +99,55 @@ class TaskControllerTest {
 				.thenThrow(new InvalidSearchConditionException("priority", "urgent"));
 
 		mockMvc.perform(get("/api/tasks/search").param("priority", "urgent"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void postTaskReturnsCreatedWithLocation() throws Exception {
+		when(taskService.create(new TaskCreate("請求書を送る", null, "high", "2026-11-20")))
+				.thenReturn(sample(7L, "請求書を送る", "todo"));
+
+		mockMvc.perform(post("/api/tasks")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{ "title": "請求書を送る", "priority": "high", "dueDate": "2026-11-20" }
+						"""))
+				.andExpect(status().isCreated())
+				.andExpect(header().string("Location", "/api/tasks/7"))
+				.andExpect(jsonPath("$.id").value(7))
+				.andExpect(jsonPath("$.status").value("todo"))
+				.andExpect(jsonPath("$.key").doesNotExist());
+	}
+
+	@Test
+	void postFromScreenOriginIsAllowedByCors() throws Exception {
+		when(taskService.create(any(TaskCreate.class))).thenReturn(sample(8L, "メモ", "todo"));
+
+		// 画面（5173）から来た POST を、CORS で拒否しない
+		mockMvc.perform(post("/api/tasks")
+				.header("Origin", "http://localhost:5173")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{ \"title\": \"メモ\" }"))
+				.andExpect(status().isCreated())
+				.andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"));
+	}
+
+	@Test
+	void postFromOtherOriginIsRejectedByCors() throws Exception {
+		mockMvc.perform(post("/api/tasks")
+				.header("Origin", "http://localhost:3000")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{ \"title\": \"メモ\" }"))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void postInvalidTaskReturnsBadRequest() throws Exception {
+		when(taskService.create(any(TaskCreate.class))).thenThrow(new InvalidTaskException("title", "必須です"));
+
+		mockMvc.perform(post("/api/tasks")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{ \"title\": \"  \" }"))
 				.andExpect(status().isBadRequest());
 	}
 

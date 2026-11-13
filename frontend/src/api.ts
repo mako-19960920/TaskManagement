@@ -27,6 +27,14 @@ export type TaskResponse = {
   key?: string;
 };
 
+// POST /api/tasks で送るタスク（title だけ必須）
+export type TaskCreateRequest = {
+  title: string;
+  description?: string | null;
+  priority?: string | null;
+  dueDate?: string | null;
+};
+
 // 検索の条件（すべて省略できる）
 export type SearchConditions = {
   keyword: string;
@@ -133,6 +141,25 @@ export async function fetchBoard(): Promise<{ columns: Board }> {
   }
   const tasks: unknown = await response.json();
   return { columns: columnsFromTasks(tasks) };
+}
+
+// タスクを1件登録し、登録できたカード（id 付き）を返す
+export async function createTask(request: TaskCreateRequest): Promise<Card> {
+  const response = await fetch("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+  if (!response.ok) {
+    throw new Error("create failed");
+  }
+  const task: TaskResponse = await response.json();
+  return {
+    id: task.id,
+    key: String(task.id),
+    text: task.title,
+    date: validDate(task.dueDate) ? task.dueDate : "",
+  };
 }
 
 export async function saveBoard(board: Board): Promise<{ columns: Board }> {
