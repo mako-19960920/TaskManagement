@@ -96,12 +96,13 @@ function Fail([string]$what, [string]$message, [string]$log) {
 }
 
 # 1. Docker と DB（5433）
-docker info *> $null
+# Docker が止まっていると docker info がエラー文を出す。PowerShell 5.1 は "Stop" の設定でそれを止まるエラーにしてしまうため、cmd で実行して終了コードだけを見る
+cmd /c "docker info >nul 2>&1"
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Docker Desktop を起動します..."
     Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
     for ($i = 0; $i -lt 60; $i++) {
-        docker info *> $null
+        cmd /c "docker info >nul 2>&1"
         if ($LASTEXITCODE -eq 0) { break }
         Start-Sleep 3
     }
