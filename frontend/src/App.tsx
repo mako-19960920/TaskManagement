@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent, PointerEvent as ReactPointerEvent } from "react";
 import {
   cardsFromResponse,
+  createTask,
   emptyBoard,
   fetchBoard,
   mergeIds,
@@ -93,8 +94,11 @@ export default function App() {
   const boardRef = useRef(board);
   const draggingRef = useRef<{ key: string; element: HTMLElement } | null>(null);
   const persistRef = useRef<(next: Board) => void>(() => {});
-  const savingRef = useRef(false);
-  const dirtyRef = useRef(false);
+  // 書き込み（POST と PUT）を1つずつ順番に行うための列
+  const writeQueueRef = useRef<Promise<unknown>>(Promise.resolve());
+  // まだ始まっていない PUT が列にあるか（あれば、その PUT が最新のボードを送るので、もう1つは足さない）
+  const putWaitingRef = useRef(false);
+  const [adding, setAdding] = useState(false);
   const addInputRef = useRef<HTMLInputElement>(null);
   const [conditions, setConditions] = useState(emptyConditions);
   const [result, setResult] = useState<SearchResult | null>(null);
@@ -125,39 +129,35 @@ export default function App() {
     setSearchError("");
   }
 
+  // 前の書き込みが終わってから job を始める。POST と PUT が同時に走ると、
+  // PUT が「まだ知らないカード」を消したり、同じカードを二重に作ったりするため
+  function inOrder<T>(job: () => Promise<T>): Promise<T> {
+    const result = writeQueueRef.current.then(job);
+    writeQueueRef.current = result.catch(() => {});
+    return result;
+  }
+
   function persist(next: Board) {
     boardRef.current = next;
     setBoard(next);
-    dirtyRef.current = true;
-    flush();
+    if (putWaitingRef.current) {
+      return;
+    }
+    putWaitingRef.current = true;
+    inOrder(async () => {
+      putWaitingRef.current = false;
+      // 送るのは、順番が来た時点の最新のボード
+      const saved = await saveBoard(boardRef.current);
+      const merged = mergeIds(boardRef.current, saved);
+      boardRef.current = merged;
+      setBoard(merged);
+      setError("");
+    }).catch(() => {
+      setError("保存できませんでした。サーバーとデータベースを確認してください。");
+    });
   }
 
   persistRef.current = persist;
-
-  async function flush() {
-    if (savingRef.current) {
-      return;
-    }
-    savingRef.current = true;
-    try {
-      do {
-        dirtyRef.current = false;
-        const snapshot = boardRef.current;
-        const saved = await saveBoard(snapshot);
-        const merged = mergeIds(boardRef.current, saved);
-        boardRef.current = merged;
-        setBoard(merged);
-        setError("");
-      } while (dirtyRef.current);
-    } catch {
-      setError("保存できませんでした。サーバーとデータベースを確認してください。");
-    } finally {
-      savingRef.current = false;
-      if (dirtyRef.current) {
-        flush();
-      }
-    }
-  }
 
   useEffect(() => {
     let active = true;
@@ -309,26 +309,36 @@ export default function App() {
     persist(next);
   }
 
-  function onAdd(event: FormEvent<HTMLFormElement>) {
+  // POST /api/tasks で1件登録し、登録できたら「やること」の末尾に出す
+  async function onAdd(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = draft.trim();
-    if (text === "") {
+    if (text === "" || adding) {
       return;
     }
-    const card: Card = {
-      id: null,
-      key: crypto.randomUUID(),
-      text,
-      date: validDate(draftDate) ? draftDate : "",
-    };
-    const next = {
-      ...boardRef.current,
-      "todo-cards": [...boardRef.current["todo-cards"], card],
-    };
-    persist(next);
-    setDraft("");
-    setDraftDate("");
-    addInputRef.current?.focus();
+    const typed = draft;
+    const typedDate = draftDate;
+    setAdding(true);
+    try {
+      const card = await inOrder(() =>
+        createTask({ title: text, dueDate: validDate(typedDate) ? typedDate : null })
+      );
+      const next = {
+        ...boardRef.current,
+        "todo-cards": [...boardRef.current["todo-cards"], card],
+      };
+      boardRef.current = next;
+      setBoard(next);
+      setError("");
+      // 登録を待つあいだに書き足した文字は消さない
+      setDraft((current) => (current === typed ? "" : current));
+      setDraftDate((current) => (current === typedDate ? "" : current));
+      addInputRef.current?.focus();
+    } catch {
+      setError("追加できませんでした。サーバーとデータベースを確認してください。");
+    } finally {
+      setAdding(false);
+    }
   }
 
   return (
@@ -480,7 +490,7 @@ export default function App() {
                     value={draftDate}
                     onChange={(event) => setDraftDate(event.target.value)}
                   />
-                  <button className="add-button" type="submit">
+                  <button className="add-button" type="submit" disabled={adding}>
                     追加
                   </button>
                 </form>

@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.taskmanagement.controller.TaskCreate;
 import com.taskmanagement.controller.TaskResponse;
 import com.taskmanagement.controller.TaskWrite;
 import com.taskmanagement.entity.Priority;
@@ -112,6 +113,56 @@ public class TaskService {
 		return taskRepository.findByStatusOrderByPositionAsc(parsed).stream()
 				.map(task -> toResponse(task, null))
 				.toList();
+	}
+
+	private static final int TITLE_MAX = 255;
+
+	/**
+	 * タスクを1件登録する。状態は todo、順番は「やること」の末尾（いちばん後ろの position + 1）にする。
+	 * 件数ではなく最大の position を使うのは、途中の番号が抜けていても重ならないようにするため。
+	 */
+	@Transactional
+	public TaskResponse create(TaskCreate input) {
+		if (input == null) {
+			throw new InvalidTaskException("body", "空です");
+		}
+		String title = input.title() == null ? "" : input.title().strip();
+		if (title.isEmpty()) {
+			throw new InvalidTaskException("title", "必須です");
+		}
+		if (title.length() > TITLE_MAX) {
+			throw new InvalidTaskException("title", TITLE_MAX + " 文字までです");
+		}
+		Priority priority = Priority.MEDIUM;
+		String priorityText = blankToNull(input.priority());
+		if (priorityText != null) {
+			try {
+				priority = Priority.from(priorityText);
+			}
+			catch (IllegalArgumentException exception) {
+				throw new InvalidTaskException("priority", "high / medium / low のいずれかです");
+			}
+		}
+		LocalDate dueDate = null;
+		String dueDateText = blankToNull(input.dueDate());
+		if (dueDateText != null) {
+			dueDate = parseDate(dueDateText);
+			if (dueDate == null) {
+				throw new InvalidTaskException("dueDate", "YYYY-MM-DD の形です");
+			}
+		}
+		int position = taskRepository.findFirstByStatusOrderByPositionDesc(TaskStatus.TODO)
+				.map(last -> last.getPosition() + 1)
+				.orElse(0);
+
+		Task task = new Task();
+		task.setTitle(title);
+		task.setDescription(blankToNull(input.description()));
+		task.setPriority(priority);
+		task.setDueDate(dueDate);
+		task.setStatus(TaskStatus.TODO);
+		task.setPosition(position);
+		return toResponse(taskRepository.save(task), null);
 	}
 
 	@Transactional

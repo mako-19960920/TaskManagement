@@ -76,7 +76,7 @@ flowchart LR
 2. 画面が `/api/...` を呼ぶと、Vite がそれを API（8080）へ転送する（`frontend/vite.config.ts` の proxy）
 3. API はデータベース（5433）を読み書きして、JSON で返す
 
-ページを開いたときは `GET /api/tasks` で全カードを読み、操作した直後は `PUT /api/tasks` で3列ぶんをまとめて保存します。
+ページを開いたときは `GET /api/tasks` で全カードを読みます。カードの追加は `POST /api/tasks` で1件ずつ登録し、削除・移動・日付の変更の直後は `PUT /api/tasks` で3列ぶんをまとめて保存します。書き込みは1つずつ順番に送るので、追加と移動が重なってもカードが二重になったり消えたりしません。
 
 ## はじめかた
 
@@ -164,6 +164,7 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 | GET | `/api/tasks/{id}` | 1件を返す。無ければ 404 |
 | GET | `/api/tasks/status/{status}` | その列のカードを返す。`status` は `todo` / `in_progress` / `done`。それ以外は 400 |
 | GET | `/api/tasks/search` | 条件に合うタスクを返す（下の表） |
+| POST | `/api/tasks` | タスクを1件登録する。必須は `title` だけ。「やること」の末尾に入り、201 を返す。値が正しくないときは 400 |
 | PUT | `/api/tasks` | 画面の3列ぶんの配列で、タスクをまとめて置き換える。配列に無いカードは削除される |
 
 `GET /api/tasks/search` の条件は、どれも省略できます。指定したものをすべて満たすタスクだけを返します。
@@ -181,6 +182,12 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 
 ```
 curl "http://localhost:8080/api/tasks/search?keyword=メール&priority=high"
+```
+
+1件登録の例（Windows のコマンドで日本語を送ると文字コードがずれることがあるので、本体は UTF-8 のファイルに書いて送ると確実です）：
+
+```
+curl -X POST http://localhost:8080/api/tasks -H "Content-Type: application/json" --data-binary @task.json
 ```
 
 JSON の形は [docs/functional-requirements.md](docs/functional-requirements.md) の「2. API」に書いています。
