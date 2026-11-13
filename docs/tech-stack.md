@@ -1,11 +1,30 @@
 # 技術選定
 
+## 使う技術
+
+| 分類 | 項目 | 採用 | バージョン |
+| --- | --- | --- | --- |
+| バックエンド | 言語 | Java（Temurin） | 21（21.0.12） |
+| バックエンド | フレームワーク | Spring Boot | 4.1.2 |
+| バックエンド | ビルドツール | Gradle（Gradle Wrapper） | 8.14.3 |
+| フロントエンド | 言語 | TypeScript | 7.0.2 |
+| フロントエンド | UI ライブラリ | React | 19.3.1 |
+| フロントエンド | ビルドツール・開発サーバー | Vite | 8.3.6 |
+| フロントエンド | 実行環境 | Node.js | 24.20.0 |
+| フロントエンド | パッケージ管理 | npm | 11.19.0 |
+| データベース | DBMS | PostgreSQL（Docker、ホストの 5433） | 17（17.11） |
+| 開発環境 | コンテナ | Docker | 29.9.2 |
+| 開発環境 | バージョン管理 | Git | 2.56.0 |
+
+- Gradle は `gradlew.bat`（Gradle Wrapper）が 8.14.3 をダウンロードして使うので、どの PC でも同じ版になる
+- Node.js、npm、Docker、Git は PC に入れたものを使う。表の版は、動作を確かめた PC のもの
+- PostgreSQL は `postgres:17` を指定している。かっこ内は実際に動いている版
+
+## API とデータ
+
 | 項目 | 採用 |
 | --- | --- |
-| バックエンド | Java 21、Spring Boot、Gradle |
 | パッケージ | `com.taskmanagement` |
-| フロントエンド | React + TypeScript（Vite） |
-| データベース | PostgreSQL 17（Docker、ホストの 5433） |
 | 読み取り | `GET /api/tasks`、`GET /api/tasks/{id}`、`GET /api/tasks/status/{status}`、`GET /api/tasks/search` |
 | 画面からの保存 | `PUT /api/tasks` |
 | 初期データ | `backend/src/main/resources/data.sql` |
@@ -14,7 +33,7 @@
 
 ## バージョン
 
-2026-11-09 時点で、このリポジトリが使っているバージョンである。「指定」は設定ファイルに書いてある値、「実際」はその指定で入ったものを示す。
+2026-11-13 時点で、このリポジトリが使っているバージョンである。「指定」は設定ファイルに書いてある値、「実際」はその指定で入ったものを示す。
 
 ### バックエンド（`backend/build.gradle.kts`）
 
