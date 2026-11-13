@@ -25,11 +25,8 @@
 | 項目 | 採用 |
 | --- | --- |
 | パッケージ | `com.taskmanagement` |
-| 読み取り | `GET /api/tasks`、`GET /api/tasks/{id}`、`GET /api/tasks/status/{status}`、`GET /api/tasks/search` |
-| 画面からの保存 | `PUT /api/tasks` |
-| 初期データ | `backend/src/main/resources/data.sql` |
-
-ログインはしない。このサーバーを開くブラウザは同じタスク一覧を見る。
+| API の形式 | JSON（REST）。一覧と仕様は [functional-requirements.md](functional-requirements.md) の「2. API」 |
+| テーブル | `tasks`。定義は [database-design.md](database-design.md) |
 
 ## バージョン
 

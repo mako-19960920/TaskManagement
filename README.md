@@ -2,8 +2,6 @@
 
 Trello のように、タスクをカードにして「やること」「進行中」「完了」の3列で管理する Web アプリです。カードは追加・削除・ドラッグで動かせ、並びはデータベースに保存されるので、ページを開き直しても残ります。
 
-RaiseTech AI エンジニアコースの課題として作っています。
-
 ## 目次
 
 - [できること](#できること)
@@ -135,7 +133,7 @@ powershell -ExecutionPolicy Bypass -File scripts\start-servers.ps1
 | ユーザー | `taskboard` |
 | パスワード | `taskboard` |
 
-開発用の値です。設定は `docker-compose.yml` と `backend/src/main/resources/application.yml` にあります。
+**開発環境専用の値です。** 本番環境では、推測されにくいパスワードを使い、設定ファイルに直接書かずに環境変数などで渡してください。設定は `docker-compose.yml` と `backend/src/main/resources/application.yml` にあります。
 
 ### 初期データとテストデータ
 
@@ -185,17 +183,15 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 curl "http://localhost:8080/api/tasks/search?keyword=メール&priority=high"
 ```
 
-JSON の形は [基本設計.md](基本設計.md) の「4. 保存データ」に書いています。
+JSON の形は [docs/functional-requirements.md](docs/functional-requirements.md) の「2. API」に書いています。
 
 ## フォルダ構成
 
 ```
 TaskManagement/
 ├── README.md               … このファイル
-├── 要件定義.md              … 何を作るか（詳しい版）
-├── 基本設計.md              … どう作るか（詳しい版）
 ├── docker-compose.yml      … PostgreSQL の起動設定
-├── docs/                   … 設計の要約とテーブル定義
+├── docs/                   … 設計書（要件、機能、画面、テーブル、技術）
 ├── scripts/
 │   └── start-servers.ps1   … DB・API・画面をまとめて起動する
 ├── logs/                   … 起動のログ（Git では管理しない）
@@ -226,15 +222,15 @@ TaskManagement/
 
 ## ドキュメント
 
+設計書はすべて `docs/` にあります。同じ内容を2か所に書かず、それぞれの文書が自分の担当だけを書きます。
+
 | ファイル | 内容 |
 | --- | --- |
-| [要件定義.md](要件定義.md) | 目的、利用者、画面、機能、非機能、技術選定、対象外を詳しく書いたもの |
-| [基本設計.md](基本設計.md) | 画面の寸法と色、入力チェック、ドラッグの手順、API の JSON |
-| [docs/requirements.md](docs/requirements.md) | 要件の要約 |
-| [docs/functional-requirements.md](docs/functional-requirements.md) | 機能要件の一覧（F-01〜）と API の動き |
-| [docs/screen-design.md](docs/screen-design.md) | 画面設計の要約 |
-| [docs/database-design.md](docs/database-design.md) | ER 図とテーブル定義 |
-| [docs/tech-stack.md](docs/tech-stack.md) | 技術選定と、各技術のバージョン |
+| [docs/requirements.md](docs/requirements.md) | 要件定義。目的、利用者、データの流れ、非機能要件、技術選定、対象外 |
+| [docs/functional-requirements.md](docs/functional-requirements.md) | 機能要件の一覧（F-01〜F-18）と、API の仕様と JSON の形 |
+| [docs/screen-design.md](docs/screen-design.md) | 画面の構成と流れ、寸法と色、入力チェック、ドラッグの手順 |
+| [docs/database-design.md](docs/database-design.md) | ER 図、テーブル定義、初期データ、接続先 |
+| [docs/tech-stack.md](docs/tech-stack.md) | 使う技術と、各技術のバージョン |
 
 ## 困ったとき
 
