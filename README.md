@@ -45,13 +45,20 @@ RaiseTech AI エンジニアコースの課題として作っています。
 
 ## 技術スタック
 
-| 層 | 技術 | 主なバージョン |
-| --- | --- | --- |
-| フロントエンド | React + TypeScript、Vite | React 19.3.1、TypeScript 7.0.2、Vite 8.3.6 |
-| バックエンド | Java、Spring Boot、Gradle | Java 21、Spring Boot 4.1.2、Gradle 8.14.3 |
-| データベース | PostgreSQL（Docker） | PostgreSQL 17 |
+| 層 | 役割 | 技術 | バージョン |
+| --- | --- | --- | --- |
+| フロントエンド | 言語 | TypeScript | 7.0.2 |
+| フロントエンド | UI ライブラリ | React | 19.3.1 |
+| フロントエンド | ビルドツール・開発サーバー | Vite | 8.3.6 |
+| フロントエンド | 実行環境 | Node.js | 24.20.0 |
+| フロントエンド | パッケージ管理 | npm | 11.19.0 |
+| バックエンド | 言語 | Java | 21 |
+| バックエンド | フレームワーク | Spring Boot | 4.1.2 |
+| バックエンド | ビルドツール | Gradle | 8.14.3 |
+| データベース | DBMS | PostgreSQL（Docker） | 17.11 |
+| 開発環境 | コンテナ | Docker | 29.9.2 |
 
-ライブラリごとの細かいバージョンと、開発に使うツールの版は [docs/tech-stack.md](docs/tech-stack.md) にまとめています。
+ライブラリごとの細かいバージョン（Hibernate、Jackson、JUnit など）は [docs/tech-stack.md](docs/tech-stack.md) にまとめています。
 
 ## しくみ
 
