@@ -214,6 +214,7 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
+  color: #fff;
 }
 
 .search-button,
@@ -225,15 +226,33 @@ body {
   cursor: pointer;
 }
 
+/* 画面の背景も #0079bf なので、白い背景に青い文字にしてボタンの形を見せる */
 .search-button {
-  background: #0079bf;
-  color: #fff;
+  background: #fff;
+  color: #0079bf;
+  font-weight: 700;
+}
+
+.search-button:hover {
+  background: #e4f0f6;
+  color: #026aa7;
 }
 
 .clear-button {
   background: #ddd;
 }
 
+.clear-button:hover {
+  background: #c7c9ce;
+}
+
+.search-button:focus-visible,
+.clear-button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 .search-status {
   margin: 0 16px 8px;
+  color: #fff;
 }
