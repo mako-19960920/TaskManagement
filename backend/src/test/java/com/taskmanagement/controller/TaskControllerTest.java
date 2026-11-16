@@ -1,7 +1,10 @@
 package com.taskmanagement.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -188,6 +191,64 @@ class TaskControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{ \"title\": \"\" }"))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void deleteTaskReturnsNoContent() throws Exception {
+		// 画面（5173）からの DELETE を、CORS で拒否しない
+		mockMvc.perform(delete("/api/tasks/5").header("Origin", "http://localhost:5173"))
+				.andExpect(status().isNoContent())
+				.andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"));
+		verify(taskService).delete(5L);
+	}
+
+	@Test
+	void deleteUnknownTaskReturnsNotFound() throws Exception {
+		doThrow(new TaskNotFoundException(9L)).when(taskService).delete(9L);
+
+		mockMvc.perform(delete("/api/tasks/9"))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void putPositionMovesTask() throws Exception {
+		when(taskService.move(5L, new TaskMove("in_progress", 7L))).thenReturn(sample(5L, "メールを返す", "in_progress"));
+
+		mockMvc.perform(put("/api/tasks/5/position")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{ \"status\": \"in_progress\", \"beforeId\": 7 }"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("in_progress"));
+	}
+
+	@Test
+	void putPositionWithUnknownStatusReturnsBadRequest() throws Exception {
+		when(taskService.move(any(Long.class), any(TaskMove.class))).thenThrow(new InvalidTaskStatusException("later"));
+
+		mockMvc.perform(put("/api/tasks/5/position")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{ \"status\": \"later\" }"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void putDueDateChangesDate() throws Exception {
+		when(taskService.changeDueDate(5L, new TaskDueDate("2026-12-01"))).thenReturn(sample(5L, "メールを返す", "todo"));
+
+		mockMvc.perform(put("/api/tasks/5/due-date")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{ \"dueDate\": \"2026-12-01\" }"))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	void putHiddenChangesHidden() throws Exception {
+		when(taskService.changeHidden(5L, new TaskHidden(true))).thenReturn(sample(5L, "メールを返す", "todo"));
+
+		mockMvc.perform(put("/api/tasks/5/hidden")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{ \"hidden\": true }"))
+				.andExpect(status().isOk());
 	}
 
 	private TaskResponse sample(Long id, String title, String status) {

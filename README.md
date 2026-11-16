@@ -81,7 +81,7 @@ flowchart LR
 2. 画面が `/api/...` を呼ぶと、Vite がそれを API（8080）へ転送する（`frontend/vite.config.ts` の proxy）
 3. API はデータベース（5433）を読み書きして、JSON で返す
 
-ページを開いたときは `GET /api/tasks` で全カードを読みます。カードの追加は `POST /api/tasks` で1件ずつ登録し、削除・移動・日付の変更・非表示の直後は `PUT /api/tasks` で3列ぶんをまとめて保存します（非表示のカードも含めて送ります）。書き込みは1つずつ順番に送るので、追加と移動が重なってもカードが二重になったり消えたりしません。
+ページを開いたときは `GET /api/tasks` で全カードを読みます。操作するたびに、そのタスク1件だけを保存します（追加は `POST`、移動・日付・非表示・編集は `PUT /api/tasks/{id}/…`、削除は `DELETE`）。ほかのタスクは送らないので、2つのタブで同時に使っても、ほかのタブで追加したカードは消えません。書き込みは1つずつ順番に送り、保存に失敗したときは最新の内容を読み直します。
 
 ## はじめかた
 
@@ -171,7 +171,11 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 | GET | `/api/tasks/search` | 条件に合うタスクを返す（下の表） |
 | POST | `/api/tasks` | タスクを1件登録する。必須は `title` だけ。「やること」の末尾に入り、201 を返す。値が正しくないときは 400 |
 | PUT | `/api/tasks/{id}` | タスクを1件編集する（タイトル・説明・優先度・期限）。無ければ 404、値が正しくないときは 400 |
-| PUT | `/api/tasks` | 画面の3列ぶんの配列で、タスクをまとめて置き換える。配列に無いカードは削除される。`hidden` で非表示かどうかも保存する |
+| PUT | `/api/tasks/{id}/position` | 1件を別の列や別の位置へ移す。本体は `{ "status": "in_progress", "beforeId": 7 }`（`beforeId` のタスクの前。null なら末尾） |
+| PUT | `/api/tasks/{id}/due-date` | 期限だけを変える。本体は `{ "dueDate": "2026-12-01" }`（null で期限なし） |
+| PUT | `/api/tasks/{id}/hidden` | 非表示かどうかだけを変える。本体は `{ "hidden": true }` |
+| DELETE | `/api/tasks/{id}` | 1件を削除する。204 を返す。無ければ 404 |
+| PUT | `/api/tasks` | 3列ぶんの配列で、タスクをまとめて置き換える。配列に無いカードは削除される。画面からは使わない（データをまとめて入れ直すときだけ） |
 
 `GET /api/tasks/search` の条件は、どれも省略できます。指定したものをすべて満たすタスクだけを返します。
 
