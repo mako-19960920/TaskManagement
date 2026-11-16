@@ -118,7 +118,7 @@ class TaskControllerTest {
 						{ "title": "請求書を送る", "priority": "high", "dueDate": "2026-11-20" }
 						"""))
 				.andExpect(status().isCreated())
-				.andExpect(header().string("Location", "/api/tasks/7"))
+				.andExpect(header().string("Location", "http://localhost/api/tasks/7"))
 				.andExpect(jsonPath("$.id").value(7))
 				.andExpect(jsonPath("$.status").value("todo"))
 				.andExpect(jsonPath("$.key").doesNotExist());
