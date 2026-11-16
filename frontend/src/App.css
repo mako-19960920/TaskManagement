@@ -72,9 +72,23 @@ body {
   user-select: none;
 }
 
+/* ドラッグ中、元の場所に残るカード（入る場所の目印になる） */
 .card.is-dragging {
   opacity: 0.45;
   cursor: grabbing;
+}
+
+/* ドラッグ中、ポインタについてくるカード */
+.card.card-overlay {
+  cursor: grabbing;
+  box-shadow: 0 8px 16px rgba(9, 30, 66, 0.3);
+  transform: rotate(2deg);
+}
+
+/* キーボードでカードを選んだときの枠 */
+.card:focus-visible {
+  outline: 2px solid #0079bf;
+  outline-offset: 2px;
 }
 
 .list.is-drop-target {

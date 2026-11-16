@@ -110,7 +110,7 @@ flowchart TD
 | バックエンド | Java、Spring Boot | タスクの読み書きを API で行う |
 | フロントエンド | React、TypeScript、Vite | 追加、削除、移動、日付変更を1つの画面で処理する |
 | データベース | PostgreSQL（Docker） | ページを閉じても、カードの文章、日付、順番が残る |
-| ドラッグ | Pointer Events（自作。dnd-kit などのライブラリは使わない） | マウスでもタッチでも、カードをつかんで移動できる。理由は [tech-stack.md](tech-stack.md) の「ドラッグ」 |
+| ドラッグ | dnd-kit（`@dnd-kit/core`、`@dnd-kit/sortable`） | マウス、タッチ、キーボードで、カードをつかんで移動できる。ドラッグ中に入る場所が見える。理由は [tech-stack.md](tech-stack.md) の「ドラッグ」 |
 | 文字の表示 | 文字列として画面に出す | HTML として解釈しない |
 | 文字コード | UTF-8 | 日本語をそのまま保存し、表示できる |
 | 開発時の起動 | Spring Boot と Vite | API は 8080、画面は 5173。画面からの `/api` は API へ転送する |

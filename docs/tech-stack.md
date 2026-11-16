@@ -22,22 +22,25 @@
 
 ## ドラッグ
 
-カードのドラッグは、**dnd-kit などのドラッグ用ライブラリを使わず**、ブラウザ標準の Pointer Events で自作している。追加のパッケージは入れていない。
+カードのドラッグには **dnd-kit** を使う。
+
+| パッケージ | 使っているもの | 役割 |
+| --- | --- | --- |
+| `@dnd-kit/core` | `DndContext`、`DragOverlay`、`useDroppable`、`PointerSensor`、`KeyboardSensor`、`pointerWithin`、`closestCorners` | ドラッグの範囲、つかんだカードの表示、列を落とせる場所にする、操作の受け付け、落とす場所の判定 |
+| `@dnd-kit/sortable` | `SortableContext`、`useSortable`、`verticalListSortingStrategy`、`arrayMove`、`sortableKeyboardCoordinates` | 列の中の並べ替えと、ドラッグ中にほかのカードをずらして入る場所を見せること |
+| `@dnd-kit/utilities` | `CSS.Translate` | ずらす量を CSS の `transform` にする |
 
 | 項目 | 内容 |
 | --- | --- |
-| 使うしくみ | Pointer Events（`pointerdown`、`pointermove`、`pointerup`、`pointercancel`） |
-| 実装の場所 | `frontend/src/hooks/useCardDrag.ts` |
-| 使っていないもの | dnd-kit（`@dnd-kit/core`、`@dnd-kit/sortable`）、react-beautiful-dnd、HTML5 Drag and Drop API（`draggable` 属性） |
-| 手順 | [screen-design.md](screen-design.md) の「6. ドラッグ」 |
+| 実装の場所 | `frontend/src/hooks/useCardDrag.ts`（決まりごと）、`components/Board.tsx`（`DndContext`）、`components/Column.tsx`（列）、`components/TaskCard.tsx`（カード） |
+| 手順と見た目 | [screen-design.md](screen-design.md) の「6. ドラッグ」 |
 
-自作にした理由は次のとおりである。
+dnd-kit にした理由は次のとおりである。
 
-- やりたいことは「3列のあいだの移動」と「同じ列の中の並べ替え」だけで、自作でも 100 行ほどで書ける
-- Pointer Events はマウス、タッチ、ペンを同じ手順で扱える。HTML5 Drag and Drop API は、スマートフォンのタッチでは動かなかったり、動きがブラウザごとに違ったりする
-- 依存するパッケージが増えないので、バージョンを上げる手間がない
-
-dnd-kit に切り替えるときは、`useCardDrag.ts` を置き換え、この節と [requirements.md](requirements.md) の技術選定、screen-design.md の「6. ドラッグ」を直す。
+- 講座の指定である
+- マウス、タッチ、ペンに加えて、キーボードでも動かせる。画面の読み上げ（スクリーンリーダー）向けの案内も出せる
+- ドラッグ中にほかのカードがずれて、入る場所が見える
+- React 用に作られていて、HTML5 Drag and Drop API と違い、スマートフォンのタッチでも同じように動く
 
 ## API とデータ
 
@@ -49,7 +52,7 @@ dnd-kit に切り替えるときは、`useCardDrag.ts` を置き換え、この�
 
 ## バージョン
 
-2026-11-13 時点で、このリポジトリが使っているバージョンである。「指定」は設定ファイルに書いてある値、「実際」はその指定で入ったものを示す。
+2026-11-16 時点で、このリポジトリが使っているバージョンである。「指定」は設定ファイルに書いてある値、「実際」はその指定で入ったものを示す。
 
 ### バックエンド（`backend/build.gradle.kts`）
 
@@ -81,6 +84,9 @@ dnd-kit に切り替えるときは、`useCardDrag.ts` を置き換え、この�
 | --- | --- | --- | --- |
 | react | ^19.3.1 | 19.3.1 | 画面の部品 |
 | react-dom | ^19.3.1 | 19.3.1 | React をブラウザに表示する |
+| @dnd-kit/core | ^6.3.1 | 6.3.1 | カードのドラッグ |
+| @dnd-kit/sortable | ^10.0.0 | 10.0.0 | 列の中の並べ替え |
+| @dnd-kit/utilities | ^3.2.2 | 3.2.2 | ドラッグ中のずれを CSS にする |
 | typescript | ^7.0.2 | 7.0.2 | 型チェック |
 | vite | ^8.3.6 | 8.3.6 | 開発サーバーとビルド |
 | @vitejs/plugin-react | ^6.3.0 | 6.3.0 | Vite で React を扱う |

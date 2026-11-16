@@ -31,7 +31,7 @@ Trello のように、タスクをカードにして「やること」「進行�
 - カードの日付をあとから変える
 - カードを削除する（確認なし）
 - 「進行中へ」「完了へ」などのボタンで、別の列の末尾へ移す
-- カードをドラッグして、別の列や同じ列の好きな位置へ移す（マウスでもタッチでも動く）
+- カードをドラッグして、別の列や同じ列の好きな位置へ移す（マウス、タッチ、キーボードで動く。ドラッグ中は入る場所が見える）
 - 操作するたびに自動で保存され、ページを開き直しても最後の並びが残る
 
 ### 検索
@@ -56,7 +56,7 @@ Trello のように、タスクをカードにして「やること」「進行�
 | データベース | DBMS | PostgreSQL（Docker） | 17.11 |
 | 開発環境 | コンテナ | Docker | 29.9.2 |
 
-カードのドラッグは、dnd-kit などのライブラリを使わず、ブラウザ標準の Pointer Events で自作しています（`frontend/src/hooks/useCardDrag.ts`）。理由は [docs/tech-stack.md](docs/tech-stack.md) の「ドラッグ」にあります。
+カードのドラッグには [dnd-kit](https://dndkit.com/)（`@dnd-kit/core`、`@dnd-kit/sortable`）を使っています。使っている部品と理由は [docs/tech-stack.md](docs/tech-stack.md) の「ドラッグ」にあります。
 
 ライブラリごとの細かいバージョン（Hibernate、Jackson、JUnit など）は [docs/tech-stack.md](docs/tech-stack.md) にまとめています。
 
@@ -234,7 +234,7 @@ TaskManagement/
 │       ├── hooks/           … 画面の状態と動き
 │       │   ├── useBoard.ts     … ボードの読み込みと保存（書き込みは1つずつ順番に送る）
 │       │   ├── useSearch.ts    … 検索の条件と結果
-│       │   └── useCardDrag.ts  … カードのドラッグ
+│       │   └── useCardDrag.ts  … カードのドラッグ（dnd-kit）
 │       ├── api/taskApi.ts   … API の呼び出し
 │       ├── lib/board.ts     … ボードを組み替える処理（React に依存しない）
 │       └── types/task.ts    … 型
@@ -248,7 +248,7 @@ TaskManagement/
 | ファイル | 内容 |
 | --- | --- |
 | [docs/requirements.md](docs/requirements.md) | 要件定義。目的、利用者、データの流れ、非機能要件、技術選定、対象外 |
-| [docs/functional-requirements.md](docs/functional-requirements.md) | 機能要件の一覧（F-01〜F-18）と、API の仕様と JSON の形 |
+| [docs/functional-requirements.md](docs/functional-requirements.md) | 機能要件の一覧（F-01〜F-19）と、API の仕様と JSON の形 |
 | [docs/screen-design.md](docs/screen-design.md) | 画面の構成と流れ、寸法と色、入力チェック、ドラッグの手順 |
 | [docs/database-design.md](docs/database-design.md) | ER 図、テーブル定義、初期データ、接続先 |
 | [docs/tech-stack.md](docs/tech-stack.md) | 使う技術と、各技術のバージョン |
