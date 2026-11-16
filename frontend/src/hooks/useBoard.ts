@@ -1,7 +1,16 @@
 // ボードの読み込みと保存。カードを変える操作は、すべてここを通す
 import { useEffect, useRef, useState } from "react";
 import { createTask, fetchBoard, saveBoard } from "../api/taskApi";
-import { appendCard, changeCardDate, emptyBoard, mergeIds, moveCard, removeCard, validDate } from "../lib/board";
+import {
+  appendCard,
+  changeCardDate,
+  emptyBoard,
+  mergeIds,
+  moveCard,
+  removeCard,
+  setCardHidden,
+  validDate,
+} from "../lib/board";
 import type { Board, ColumnId } from "../types/task";
 
 export function useBoard() {
@@ -92,5 +101,7 @@ export function useBoard() {
       persist(moveCard(boardRef.current, key, targetId, beforeKey)),
     remove: (key: string) => persist(removeCard(boardRef.current, key)),
     changeDate: (key: string, date: string) => persist(changeCardDate(boardRef.current, key, date)),
+    // 非表示にする（hidden = true）か、表示に戻す（false）。列の中の位置は変えない
+    setHidden: (key: string, hidden: boolean) => persist(setCardHidden(boardRef.current, key, hidden)),
   };
 }

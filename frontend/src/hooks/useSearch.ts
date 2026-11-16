@@ -1,7 +1,7 @@
 // 検索の条件と結果
 import { useState } from "react";
 import { searchBoard } from "../api/taskApi";
-import { findCard, moveCard, removeCard } from "../lib/board";
+import { findCard, moveCard, removeCard, setCardHidden } from "../lib/board";
 import type { ColumnId, SearchConditions, SearchResult } from "../types/task";
 
 export const emptyConditions: SearchConditions = { keyword: "", status: "", priority: "", dueFrom: "", dueTo: "" };
@@ -48,5 +48,20 @@ export function useSearch() {
     });
   }
 
-  return { conditions, result, error, changeCondition, search, clear, moveInResult, removeFromResult };
+  // 検索結果の表示の中で、非表示の印を付け外しする（非表示のタスクも検索結果に出すので、件数は変わらない）
+  function setHiddenInResult(key: string, hidden: boolean) {
+    setResult((current) => (current ? { ...current, columns: setCardHidden(current.columns, key, hidden) } : current));
+  }
+
+  return {
+    conditions,
+    result,
+    error,
+    changeCondition,
+    search,
+    clear,
+    moveInResult,
+    removeFromResult,
+    setHiddenInResult,
+  };
 }

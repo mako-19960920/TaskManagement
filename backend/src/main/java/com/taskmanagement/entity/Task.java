@@ -42,6 +42,10 @@ public class Task {
 	@Column(nullable = false)
 	private int position;
 
+	// 非表示かどうか。今ある行にも入るように、はじめの値（false）を列の定義に含める
+	@Column(nullable = false, columnDefinition = "boolean default false not null")
+	private boolean hidden;
+
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
 
@@ -118,6 +122,14 @@ public class Task {
 
 	public void setPosition(int position) {
 		this.position = position;
+	}
+
+	public boolean isHidden() {
+		return hidden;
+	}
+
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
 	}
 
 	public LocalDateTime getCreatedAt() {

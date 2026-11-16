@@ -71,6 +71,8 @@ class TaskServiceCreateTest {
 		assertThat(task.getDueDate()).isEqualTo(LocalDate.of(2026, 11, 20));
 		assertThat(task.getStatus()).isEqualTo(TaskStatus.TODO);
 		assertThat(task.getPosition()).isEqualTo(5);
+		assertThat(task.isHidden()).isFalse();
+		assertThat(response.hidden()).isFalse();
 		assertThat(response.id()).isEqualTo(10L);
 		assertThat(response.status()).isEqualTo("todo");
 		assertThat(response.key()).isNull();

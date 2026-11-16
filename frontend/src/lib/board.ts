@@ -50,6 +50,7 @@ export function cardFromTask(task: TaskResponse): Card {
     key: task.key || (task.id == null ? crypto.randomUUID() : String(task.id)),
     text: task.title,
     date: validDate(task.dueDate) ? task.dueDate : "",
+    hidden: task.hidden === true,
   };
 }
 
@@ -133,6 +134,30 @@ export function changeCardDate(board: Board, key: string, date: string): Board {
     next[id] = board[id].map((card) => (card.key === key ? { ...card, date: valid } : card));
   }
   return next;
+}
+
+export function setCardHidden(board: Board, key: string, hidden: boolean): Board {
+  const next = emptyBoard();
+  for (const id of columnIds) {
+    next[id] = board[id].map((card) => (card.key === key ? { ...card, hidden } : card));
+  }
+  return next;
+}
+
+// ボードに出すカード（非表示のカードを除く）。並びはそのまま
+export function visibleBoard(board: Board): Board {
+  const next = emptyBoard();
+  for (const id of columnIds) {
+    next[id] = board[id].filter((card) => !card.hidden);
+  }
+  return next;
+}
+
+// 非表示のカードを、列の順（やること → 進行中 → 完了）、列の中の並び順で返す
+export function hiddenCards(board: Board): { card: Card; columnId: ColumnId }[] {
+  return columnIds.flatMap((columnId) =>
+    board[columnId].filter((card) => card.hidden).map((card) => ({ card, columnId }))
+  );
 }
 
 export function appendCard(board: Board, columnId: ColumnId, card: Card): Board {
