@@ -1,5 +1,6 @@
 package com.taskmanagement.service;
 
+import java.io.Serial;
 import java.util.Map;
 
 /**
@@ -7,6 +8,9 @@ import java.util.Map;
  * field は間違えた項目（title など）、メッセージは「タイトルは必須です」のような理由。
  */
 public class InvalidTaskException extends RuntimeException {
+
+	@Serial
+	private static final long serialVersionUID = 1L;
 
 	private static final Map<String, String> LABELS = Map.of(
 			"title", "タイトル",

@@ -5,6 +5,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,15 +38,19 @@ public class TaskService {
 			TaskStatus.IN_PROGRESS,
 			TaskStatus.DONE);
 
+	/** ボードの並び：列の順（やること → 進行中 → 完了）、列の中は position の順 */
+	private static final Comparator<Task> BOARD_ORDER = Comparator
+			.comparingInt((Task task) -> STATUS_ORDER.indexOf(task.getStatus()))
+			.thenComparingInt(Task::getPosition);
+
+	/** タイトルの最大の文字数（データベースの title 列は varchar(255)） */
+	private static final int TITLE_MAX = 255;
+
 	private final TaskRepository taskRepository;
 
 	public TaskService(TaskRepository taskRepository) {
 		this.taskRepository = taskRepository;
 	}
-
-	private static final Comparator<Task> BOARD_ORDER = Comparator
-			.comparingInt((Task task) -> STATUS_ORDER.indexOf(task.getStatus()))
-			.thenComparingInt(Task::getPosition);
 
 	@Transactional(readOnly = true)
 	public List<TaskResponse> findAll() {
@@ -90,7 +95,7 @@ public class TaskService {
 			return Priority.from(value);
 		}
 		catch (IllegalArgumentException exception) {
-			throw new InvalidSearchConditionException("priority", value);
+			throw InvalidSearchConditionException.invalidValue("priority", value);
 		}
 	}
 
@@ -100,7 +105,7 @@ public class TaskService {
 		}
 		LocalDate date = parseDate(value);
 		if (date == null) {
-			throw new InvalidSearchConditionException(name, value);
+			throw InvalidSearchConditionException.invalidValue(name, value);
 		}
 		return date;
 	}
@@ -118,8 +123,6 @@ public class TaskService {
 				.map(task -> toResponse(task, null))
 				.toList();
 	}
-
-	private static final int TITLE_MAX = 255;
 
 	/**
 	 * タスクを1件登録する。状態は todo、順番は「やること」の末尾（いちばん後ろの position + 1）にする。
@@ -287,7 +290,7 @@ public class TaskService {
 				}
 			}
 		}
-		Map<Long, Task> byId = new java.util.LinkedHashMap<>();
+		Map<Long, Task> byId = new LinkedHashMap<>();
 		for (Task task : taskRepository.findAll()) {
 			byId.put(task.getId(), task);
 		}
