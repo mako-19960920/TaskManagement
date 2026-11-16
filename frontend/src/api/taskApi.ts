@@ -41,6 +41,8 @@ export async function saveBoard(board: Board): Promise<Board> {
         dueDate: validDate(card.date) ? card.date : null,
         status: columnToStatus[id],
         position,
+        // 非表示のカードも送る（送らないと、サーバーが削除してしまう）
+        hidden: card.hidden,
       });
     });
   }

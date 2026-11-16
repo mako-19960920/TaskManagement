@@ -98,14 +98,16 @@ body {
 
 .card-top {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
   padding-left: 4px;
 }
 
+/* 文章は幅いっぱいに出し、「非表示」「削除」ボタンはその下の行に右寄せで置く */
 .card-main {
-  flex: 1;
+  flex: 1 1 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -347,4 +349,125 @@ body {
 .confirm-ok:focus-visible {
   outline: 2px solid #0079bf;
   outline-offset: 2px;
+}
+
+/* カードの「非表示」「削除」ボタンを横に並べる */
+.card-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.hide-button {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #5e6c84;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hide-button:hover {
+  background: #dfe1e6;
+  color: #172b4d;
+}
+
+/* 検索結果に出た非表示のカード */
+.card.is-hidden {
+  background: #f4f5f7;
+  box-shadow: inset 0 0 0 1px #c1c7d0;
+}
+
+.card-badge {
+  align-self: flex-start;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: #5e6c84;
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+}
+
+/* ボードの下の「非表示のタスク」欄 */
+.hidden-panel {
+  max-width: 840px;
+  margin: 0 16px 24px;
+  padding: 8px;
+  border-radius: 12px;
+  background: #ebecf0;
+}
+
+.hidden-summary {
+  padding: 4px 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hidden-empty {
+  margin: 8px;
+  color: #5e6c84;
+  font-size: 14px;
+}
+
+.hidden-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.hidden-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(9, 30, 66, 0.25);
+}
+
+.hidden-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hidden-text {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.hidden-meta {
+  color: #5e6c84;
+  font-size: 12px;
+}
+
+.hidden-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.show-button {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  background: #e4e6ea;
+  color: #172b4d;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.show-button:hover {
+  background: #dfe1e6;
 }

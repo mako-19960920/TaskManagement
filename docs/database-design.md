@@ -14,6 +14,7 @@ erDiagram
     date due_date "期限"
     varchar status "状態（todo / in_progress / done）"
     int position "カラム内の表示順"
+    boolean hidden "非表示か"
     timestamp created_at "作成日時"
     timestamp updated_at "更新日時"
   }
@@ -31,7 +32,8 @@ erDiagram
 | priority | varchar(10) | YES | `'medium'` | 優先度（high / medium / low） |
 | due_date | date | NO | NULL | 期限 |
 | status | varchar(20) | YES | `'todo'` | 状態（todo / in_progress / done） |
-| position | int | YES | `0` | カラム内の表示順。0 からで、小さいほうが上 |
+| position | int | YES | `0` | カラム内の表示順。0 からで、小さいほうが上。非表示のタスクも、この並びの中に残る |
+| hidden | boolean | YES | `false` | 非表示か。`true` のタスクはボードに出さず、非表示欄に出す |
 | created_at | timestamp | YES | `CURRENT_TIMESTAMP` | 作成日時 |
 | updated_at | timestamp | YES | `CURRENT_TIMESTAMP` | 更新日時。アプリから更新したときに、その時刻へ書き換える |
 

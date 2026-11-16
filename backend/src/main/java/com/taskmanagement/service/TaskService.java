@@ -187,6 +187,9 @@ public class TaskService {
 				task.setDueDate(parseDate(input.dueDate()));
 				task.setStatus(parseStatus(input.status()));
 				task.setPosition(input.position() == null ? 0 : input.position());
+				if (input.hidden() != null) {
+					task.setHidden(input.hidden());
+				}
 				Task saved = taskRepository.save(task);
 				kept.add(saved.getId());
 				responses.add(toResponse(saved, input.key()));
@@ -229,6 +232,7 @@ public class TaskService {
 				task.getDueDate(),
 				task.getStatus().value(),
 				task.getPosition(),
+				task.isHidden(),
 				task.getCreatedAt(),
 				task.getUpdatedAt(),
 				key);

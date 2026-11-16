@@ -13,6 +13,7 @@ public record TaskResponse(
 		LocalDate dueDate,
 		String status,
 		int position,
+		boolean hidden,
 		LocalDateTime createdAt,
 		LocalDateTime updatedAt,
 		@JsonInclude(JsonInclude.Include.NON_NULL) String key) {

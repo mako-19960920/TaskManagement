@@ -10,6 +10,8 @@ export type Card = {
   key: string;
   text: string;
   date: string;
+  // 非表示か。非表示でも列の並びの中に残し、表示に戻したら元の位置に出す
+  hidden: boolean;
 };
 
 // 3列ぶんのカード
@@ -24,6 +26,7 @@ export type TaskResponse = {
   dueDate: string | null;
   status: string;
   position?: number;
+  hidden?: boolean;
   key?: string;
 };
 

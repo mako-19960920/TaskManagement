@@ -1,10 +1,11 @@
 // タスクボードの画面全体。部品と hooks を組み合わせ、検索中の動きをまとめる
 import { Board } from "./components/Board";
+import { HiddenPanel } from "./components/HiddenPanel";
 import { SearchForm } from "./components/SearchForm";
 import { useBoard } from "./hooks/useBoard";
 import { useConfirm } from "./hooks/useConfirm";
 import { useSearch } from "./hooks/useSearch";
-import { findBoardKey, findCard } from "./lib/board";
+import { findBoardKey, findCard, hiddenCards, visibleBoard } from "./lib/board";
 import type { Card, ColumnId } from "./types/task";
 
 export default function App() {
@@ -12,7 +13,8 @@ export default function App() {
   const search = useSearch();
   const { confirm, dialog } = useConfirm();
   const searching = search.result !== null;
-  const shown = search.result ? search.result.columns : board.board;
+  // ボードには非表示のカードを出さない。検索結果には非表示のカードも出す（印を付ける）
+  const shown = search.result ? search.result.columns : visibleBoard(board.board);
 
   // ドラッグで離したとき。検索中は、検索結果の表示を動かし、ボード側の同じカード（id で探す）も移動・保存する
   function dropCard(key: string, targetId: ColumnId, beforeKey: string | null) {
@@ -70,6 +72,21 @@ export default function App() {
     search.removeFromResult(card.key);
   }
 
+  // 非表示ボタンと「表示に戻す」。列の中の位置は変えないので、表示に戻すと元の位置に出る。
+  // 検索中は、検索結果の印を付け外しし、ボード側の同じカード（id で探す）も変えて保存する
+  function toggleHidden(card: Card) {
+    const hidden = !card.hidden;
+    if (!searching) {
+      board.setHidden(card.key, hidden);
+      return;
+    }
+    const boardKey = findBoardKey(board.current(), card);
+    if (boardKey) {
+      board.setHidden(boardKey, hidden);
+    }
+    search.setHiddenInResult(card.key, hidden);
+  }
+
   return (
     <>
       <header className="header">
@@ -86,21 +103,28 @@ export default function App() {
         <p className="search-status">
           {search.result.count === 0
             ? "該当するタスクはありません"
-            : `検索結果：${search.result.count}件（検索中は列の移動と削除ができます）`}
+            : `検索結果：${search.result.count}件（検索中は列の移動、非表示、削除ができます）`}
         </p>
       ) : null}
       {search.error ? <p className="board-error">{search.error}</p> : null}
       {board.error ? <p className="board-error">{board.error}</p> : null}
       {board.ready ? (
-        <Board
-          cards={shown}
-          searching={searching}
-          onDrop={dropCard}
-          onDelete={deleteCard}
-          onMove={moveToEnd}
-          onChangeDate={board.changeDate}
-          onAdd={board.add}
-        />
+        <>
+          <Board
+            cards={shown}
+            searching={searching}
+            onDrop={dropCard}
+            onDelete={deleteCard}
+            onToggleHidden={toggleHidden}
+            onMove={moveToEnd}
+            onChangeDate={board.changeDate}
+            onAdd={board.add}
+          />
+          {/* 検索中は、非表示のタスクも検索結果に出るので、非表示欄は出さない */}
+          {searching ? null : (
+            <HiddenPanel items={hiddenCards(board.board)} onShow={toggleHidden} onDelete={deleteCard} />
+          )}
+        </>
       ) : (
         <p className="board-status">読み込み中</p>
       )}

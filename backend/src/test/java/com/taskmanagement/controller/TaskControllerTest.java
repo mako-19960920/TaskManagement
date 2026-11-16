@@ -41,7 +41,8 @@ class TaskControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(1))
 				.andExpect(jsonPath("$[0].title").value("買い物リストを作る"))
-				.andExpect(jsonPath("$[0].status").value("todo"));
+				.andExpect(jsonPath("$[0].status").value("todo"))
+				.andExpect(jsonPath("$[0].hidden").value(false));
 	}
 
 	@Test
@@ -153,6 +154,6 @@ class TaskControllerTest {
 
 	private TaskResponse sample(Long id, String title, String status) {
 		LocalDateTime now = LocalDateTime.of(2026, 11, 2, 12, 0);
-		return new TaskResponse(id, title, null, "medium", null, status, 0, now, now, null);
+		return new TaskResponse(id, title, null, "medium", null, status, 0, false, now, now, null);
 	}
 }
