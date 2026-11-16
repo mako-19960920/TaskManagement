@@ -45,6 +45,19 @@ export default function App() {
     search.moveInResult(card.key, targetId, null);
   }
 
+  // 削除ボタン。検索中は、検索結果の表示から消し、ボード側の同じカード（id で探す）も消して保存する
+  function deleteCard(card: Card) {
+    if (!searching) {
+      board.remove(card.key);
+      return;
+    }
+    const boardKey = findBoardKey(board.current(), card);
+    if (boardKey) {
+      board.remove(boardKey);
+    }
+    search.removeFromResult(card.key);
+  }
+
   return (
     <>
       <header className="header">
@@ -61,7 +74,7 @@ export default function App() {
         <p className="search-status">
           {search.result.count === 0
             ? "該当するタスクはありません"
-            : `検索結果：${search.result.count}件（検索中は列の移動のみできます）`}
+            : `検索結果：${search.result.count}件（検索中は列の移動と削除ができます）`}
         </p>
       ) : null}
       {search.error ? <p className="board-error">{search.error}</p> : null}
@@ -71,7 +84,7 @@ export default function App() {
           cards={shown}
           searching={searching}
           onDrop={dropCard}
-          onDelete={board.remove}
+          onDelete={deleteCard}
           onMove={moveToEnd}
           onChangeDate={board.changeDate}
           onAdd={board.add}

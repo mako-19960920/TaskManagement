@@ -11,7 +11,7 @@ type Props = {
   cards: Card[];
   searching: boolean;
   isDropTarget: boolean;
-  onDelete: (key: string) => void;
+  onDelete: (card: Card) => void;
   onMove: (card: Card, targetId: ColumnId) => void;
   onChangeDate: (key: string, date: string) => void;
   onAdd: (text: string, date: string) => Promise<boolean>;
