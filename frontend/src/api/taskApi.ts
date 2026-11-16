@@ -1,8 +1,10 @@
-// API（/api/tasks）の呼び出し。失敗したら Error を投げる
-import { cardFromTask, columnIds, columnsFromTasks, columnToStatus, validDate } from "../lib/board";
+// API（/api/tasks）の呼び出し。失敗したら ApiError（HTTP のステータス付き）を投げる。
+// 書き込みは、どれも1件だけを変える（ほかの画面で追加したタスクを消さないため）
+import { cardFromTask, columnsFromTasks, columnToStatus } from "../lib/board";
 import type {
   Board,
   Card,
+  ColumnId,
   SearchConditions,
   SearchResult,
   TaskCreateRequest,
@@ -10,73 +12,74 @@ import type {
   TaskUpdateRequest,
 } from "../types/task";
 
+// API が失敗したとき。status はサーバーが返した数字（つながらなかったときは 0）
+export class ApiError extends Error {
+  readonly status: number;
+
+  constructor(status: number) {
+    super(`API の呼び出しに失敗しました（${status}）`);
+    this.status = status;
+  }
+}
+
+async function call(url: string, init?: RequestInit): Promise<Response> {
+  let response: Response;
+  try {
+    response = await fetch(url, init);
+  } catch {
+    throw new ApiError(0);
+  }
+  if (!response.ok) {
+    throw new ApiError(response.status);
+  }
+  return response;
+}
+
+// 本体を JSON で送り、応答のタスクをカードにして返す
+async function send(url: string, method: string, body: unknown): Promise<Card> {
+  const response = await call(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const task: TaskResponse = await response.json();
+  return cardFromTask(task);
+}
+
 // 全件を読み、3列に分けて返す
 export async function fetchBoard(): Promise<Board> {
-  const response = await fetch("/api/tasks");
-  if (!response.ok) {
-    throw new Error("load failed");
-  }
+  const response = await call("/api/tasks");
   return columnsFromTasks(await response.json());
 }
 
-// タスクを1件登録し、登録できたカード（id 付き）を返す
-export async function createTask(request: TaskCreateRequest): Promise<Card> {
-  const response = await fetch("/api/tasks", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
-  });
-  if (!response.ok) {
-    throw new Error("create failed");
-  }
-  const task: TaskResponse = await response.json();
-  return cardFromTask(task);
+// タスクを1件登録し、登録できたカード（id 付き）を返す（POST /api/tasks）
+export function createTask(request: TaskCreateRequest): Promise<Card> {
+  return send("/api/tasks", "POST", request);
 }
 
-// タスクを1件編集し（タイトル・説明・優先度・期限）、編集後のカードを返す
-export async function updateTask(id: number, request: TaskUpdateRequest): Promise<Card> {
-  const response = await fetch(`/api/tasks/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
-  });
-  if (!response.ok) {
-    throw new Error(`update failed: ${response.status}`);
-  }
-  const task: TaskResponse = await response.json();
-  return cardFromTask(task);
+// タスクを1件編集し（タイトル・説明・優先度・期限）、編集後のカードを返す（PUT /api/tasks/{id}）
+export function updateTask(id: number, request: TaskUpdateRequest): Promise<Card> {
+  return send(`/api/tasks/${id}`, "PUT", request);
 }
 
-// 3列ぶんのカードで、タスクをまとめて置き換える。応答のカードには送った key が付く
-export async function saveBoard(board: Board): Promise<Board> {
-  const tasks: TaskResponse[] = [];
-  for (const id of columnIds) {
-    board[id].forEach((card, position) => {
-      const title = typeof card.text === "string" ? card.text.trim() : "";
-      if (title === "") {
-        return;
-      }
-      tasks.push({
-        id: card.id,
-        key: card.key,
-        title,
-        dueDate: validDate(card.date) ? card.date : null,
-        status: columnToStatus[id],
-        position,
-        // 非表示のカードも送る（送らないと、サーバーが削除してしまう）
-        hidden: card.hidden,
-      });
-    });
-  }
-  const response = await fetch("/api/tasks", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(tasks),
-  });
-  if (!response.ok) {
-    throw new Error("save failed");
-  }
-  return columnsFromTasks(await response.json());
+// タスクを1件、columnId の列の beforeId のタスクの前へ移す。null なら末尾（PUT /api/tasks/{id}/position）
+export function moveTask(id: number, columnId: ColumnId, beforeId: number | null): Promise<Card> {
+  return send(`/api/tasks/${id}/position`, "PUT", { status: columnToStatus[columnId], beforeId });
+}
+
+// 期限だけを変える。null なら期限なし（PUT /api/tasks/{id}/due-date）
+export function changeTaskDueDate(id: number, dueDate: string | null): Promise<Card> {
+  return send(`/api/tasks/${id}/due-date`, "PUT", { dueDate });
+}
+
+// 非表示かどうかだけを変える（PUT /api/tasks/{id}/hidden）
+export function changeTaskHidden(id: number, hidden: boolean): Promise<Card> {
+  return send(`/api/tasks/${id}/hidden`, "PUT", { hidden });
+}
+
+// タスクを1件削除する（DELETE /api/tasks/{id}）
+export async function deleteTask(id: number): Promise<void> {
+  await call(`/api/tasks/${id}`, { method: "DELETE" });
 }
 
 // 条件に合うタスクを3列に分けて返す。空の条件は送らない
@@ -88,10 +91,7 @@ export async function searchBoard(conditions: SearchConditions): Promise<SearchR
       params.set(name, text);
     }
   }
-  const response = await fetch(`/api/tasks/search?${params}`);
-  if (!response.ok) {
-    throw new Error("search failed");
-  }
+  const response = await call(`/api/tasks/search?${params}`);
   const tasks: unknown = await response.json();
   return { columns: columnsFromTasks(tasks), count: Array.isArray(tasks) ? tasks.length : 0 };
 }

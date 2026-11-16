@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.taskmanagement.controller.TaskCreate;
+import com.taskmanagement.controller.TaskDueDate;
+import com.taskmanagement.controller.TaskHidden;
+import com.taskmanagement.controller.TaskMove;
 import com.taskmanagement.controller.TaskResponse;
 import com.taskmanagement.controller.TaskUpdate;
 import com.taskmanagement.controller.TaskWrite;
@@ -149,7 +152,96 @@ public class TaskService {
 			throw new InvalidTaskException("body", "空です");
 		}
 		applyFields(task, input.title(), input.description(), input.priority(), input.dueDate());
-		return toResponse(taskRepository.save(task), null);
+		return toResponse(taskRepository.saveAndFlush(task), null);
+	}
+
+	/**
+	 * タスクを1件、別の列や同じ列の別の位置へ移す。input.status() の列の、input.beforeId() のタスクの前に入れる。
+	 * beforeId が null か、その列に無いとき（ほかの画面で消えたなど）は末尾に入れる。
+	 * 元の列と行き先の列の順番を、0 からの連番に振り直す。ほかのタスクは消さない。
+	 */
+	@Transactional
+	public TaskResponse move(long id, TaskMove input) {
+		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+		if (input == null) {
+			throw new InvalidTaskException("body", "空です");
+		}
+		TaskStatus target = parseStatus(input.status());
+		TaskStatus source = task.getStatus();
+
+		List<Task> sourceList = new ArrayList<>(taskRepository.findByStatusOrderByPositionAsc(source));
+		sourceList.removeIf(item -> item.getId().equals(task.getId()));
+		List<Task> targetList = source == target
+				? sourceList
+				: new ArrayList<>(taskRepository.findByStatusOrderByPositionAsc(target));
+
+		int index = targetList.size();
+		if (input.beforeId() != null) {
+			for (int i = 0; i < targetList.size(); i++) {
+				if (targetList.get(i).getId().equals(input.beforeId())) {
+					index = i;
+					break;
+				}
+			}
+		}
+		targetList.add(index, task);
+		task.setStatus(target);
+
+		if (source != target) {
+			renumber(sourceList);
+		}
+		renumber(targetList);
+		// すぐに書き込んで、応答に新しい更新日時を入れる
+		return toResponse(taskRepository.saveAndFlush(task), null);
+	}
+
+	/** タスクを1件削除する（行ごと消す）。同じ列で後ろにあるタスクの順番を詰める */
+	@Transactional
+	public void delete(long id) {
+		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+		TaskStatus status = task.getStatus();
+		taskRepository.delete(task);
+		List<Task> rest = new ArrayList<>(taskRepository.findByStatusOrderByPositionAsc(status));
+		rest.removeIf(item -> item.getId().equals(task.getId()));
+		renumber(rest);
+	}
+
+	/** 期限だけを変える。null か空なら期限なし。形が違えば 400 */
+	@Transactional
+	public TaskResponse changeDueDate(long id, TaskDueDate input) {
+		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+		String value = input == null ? null : blankToNull(input.dueDate());
+		LocalDate dueDate = null;
+		if (value != null) {
+			dueDate = parseDate(value);
+			if (dueDate == null) {
+				throw new InvalidTaskException("dueDate", "YYYY-MM-DD の形です");
+			}
+		}
+		task.setDueDate(dueDate);
+		return toResponse(taskRepository.saveAndFlush(task), null);
+	}
+
+	/** 非表示かどうかだけを変える。列の中の順番は変えない */
+	@Transactional
+	public TaskResponse changeHidden(long id, TaskHidden input) {
+		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+		if (input == null || input.hidden() == null) {
+			throw new InvalidTaskException("hidden", "true か false です");
+		}
+		task.setHidden(input.hidden());
+		return toResponse(taskRepository.saveAndFlush(task), null);
+	}
+
+	/** 列の中の順番を、並びのとおり 0 からの連番にする。変わったものだけ保存する */
+	private void renumber(List<Task> tasks) {
+		for (int i = 0; i < tasks.size(); i++) {
+			Task task = tasks.get(i);
+			if (task.getPosition() != i) {
+				task.setPosition(i);
+				taskRepository.save(task);
+			}
+		}
 	}
 
 	/** 登録と編集で共通の入力チェック。正しければ task に値を入れ、正しくなければ 400（InvalidTaskException）にする */

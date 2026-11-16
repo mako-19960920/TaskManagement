@@ -49,7 +49,7 @@ class TaskServiceUpdateTest {
 		task.setPosition(3);
 		task.setHidden(true);
 		lenient().when(taskRepository.findById(5L)).thenReturn(Optional.of(task));
-		lenient().when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		lenient().when(taskRepository.saveAndFlush(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
 	}
 
 	@Test
@@ -83,7 +83,7 @@ class TaskServiceUpdateTest {
 
 		assertThatThrownBy(() -> taskService.update(9L, new TaskUpdate("メモ", null, null, null)))
 				.isInstanceOf(TaskNotFoundException.class);
-		verify(taskRepository, never()).save(any());
+		verify(taskRepository, never()).saveAndFlush(any());
 	}
 
 	@Test
@@ -98,7 +98,7 @@ class TaskServiceUpdateTest {
 				.isInstanceOf(InvalidTaskException.class);
 		assertThatThrownBy(() -> taskService.update(5L, null))
 				.isInstanceOf(InvalidTaskException.class);
-		verify(taskRepository, never()).save(any());
+		verify(taskRepository, never()).saveAndFlush(any());
 		// 失敗したときは、元の値のまま
 		assertThat(task.getTitle()).isEqualTo("メールを返す");
 	}

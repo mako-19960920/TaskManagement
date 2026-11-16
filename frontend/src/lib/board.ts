@@ -99,30 +99,6 @@ export function columnsFromTasks(tasks: unknown): Board {
   return board;
 }
 
-// PUT の応答から、サーバーが決める値（id、作成日時、更新日時）を、key が同じカードに付ける。
-// 文章や日付は付けない（保存を待つあいだに画面で変えた内容を、古い応答で上書きしないため）
-export function mergeIds(board: Board, saved: Board): Board {
-  const fromServer = new Map<string, Card>();
-  for (const id of columnIds) {
-    for (const item of saved[id]) {
-      if (item && item.key) {
-        fromServer.set(item.key, item);
-      }
-    }
-  }
-  const next = emptyBoard();
-  for (const id of columnIds) {
-    next[id] = board[id].map((card) => {
-      const item = fromServer.get(card.key);
-      if (!item) {
-        return card;
-      }
-      return { ...card, id: item.id, createdAt: item.createdAt, updatedAt: item.updatedAt };
-    });
-  }
-  return next;
-}
-
 // key のカードの一部の値を変える
 export function patchCard(board: Board, key: string, patch: Partial<Card>): Board {
   const next = emptyBoard();
