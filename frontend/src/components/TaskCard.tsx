@@ -1,25 +1,36 @@
-// カード1枚。文章、日付、日付の入力欄、非表示ボタン、削除ボタン、移動ボタン。ドラッグで並べ替えできる
+// カード1枚。文章、日付、日付の入力欄、詳細・非表示・削除ボタン、移動ボタン。ドラッグで並べ替えでき、押すと詳細画面を開く
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { columns, formatCardDate } from "../lib/board";
+import type { MouseEvent } from "react";
 import type { Card, ColumnId } from "../types/task";
 
 type Props = {
   card: Card;
   columnId: ColumnId;
   searching: boolean;
+  onOpen: (card: Card) => void;
   onDelete: (card: Card) => void;
   onToggleHidden: (card: Card) => void;
   onMove: (card: Card, targetId: ColumnId) => void;
   onChangeDate: (key: string, date: string) => void;
 };
 
-export function TaskCard({ card, columnId, searching, onDelete, onToggleHidden, onMove, onChangeDate }: Props) {
+export function TaskCard({ card, columnId, searching, onOpen, onDelete, onToggleHidden, onMove, onChangeDate }: Props) {
   const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
     id: card.key,
     attributes: { roleDescription: "並べ替えできるカード" },
   });
   const date = formatCardDate(card.date);
+
+  // カードを押したら詳細画面を開く。ボタンと入力欄の上で押したときは、それぞれの操作を優先する。
+  // ドラッグしたあとは、dnd-kit がこのクリックを止めるので開かない
+  function onClick(event: MouseEvent<HTMLLIElement>) {
+    if (event.target instanceof Element && event.target.closest("button, input, select, textarea")) {
+      return;
+    }
+    onOpen(card);
+  }
 
   return (
     <li
@@ -30,6 +41,7 @@ export function TaskCard({ card, columnId, searching, onDelete, onToggleHidden, 
       data-key={card.key}
       {...attributes}
       {...listeners}
+      onClick={onClick}
     >
       <div className="card-top">
         <div className="card-main">
@@ -51,6 +63,10 @@ export function TaskCard({ card, columnId, searching, onDelete, onToggleHidden, 
           />
         </div>
         <div className="card-actions">
+          {/* キーボードでも詳細画面を開けるように、ボタンも置く */}
+          <button className="open-button" type="button" onClick={() => onOpen(card)}>
+            詳細
+          </button>
           <button className="hide-button" type="button" onClick={() => onToggleHidden(card)}>
             {card.hidden ? "表示に戻す" : "非表示"}
           </button>

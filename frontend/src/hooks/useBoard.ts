@@ -1,17 +1,21 @@
 // ボードの読み込みと保存。カードを変える操作は、すべてここを通す
 import { useEffect, useRef, useState } from "react";
-import { createTask, fetchBoard, saveBoard } from "../api/taskApi";
+import { createTask, fetchBoard, saveBoard, updateTask } from "../api/taskApi";
 import {
   appendCard,
   changeCardDate,
   emptyBoard,
   mergeIds,
   moveCard,
+  patchCard,
   removeCard,
   setCardHidden,
   validDate,
 } from "../lib/board";
-import type { Board, ColumnId } from "../types/task";
+import type { Board, Card, ColumnId, TaskUpdateRequest } from "../types/task";
+
+// 編集の結果。失敗したときは、画面に出す文言を返す
+export type UpdateResult = { ok: true; card: Card } | { ok: false; message: string };
 
 export function useBoard() {
   const [board, setBoard] = useState<Board>(emptyBoard);
@@ -90,6 +94,30 @@ export function useBoard() {
     }
   }
 
+  // PUT /api/tasks/{id} で1件を編集する（タイトル・説明・優先度・期限）。
+  // ほかの書き込みと同じ列に並べ、成功したら、ボードの同じカードに編集後の値を入れる
+  async function update(card: Card, request: TaskUpdateRequest): Promise<UpdateResult> {
+    if (card.id == null) {
+      return { ok: false, message: "まだ保存されていないため、編集できません。" };
+    }
+    const id = card.id;
+    try {
+      const saved = await inOrder(() => updateTask(id, request));
+      const { text, date, description, priority, createdAt, updatedAt } = saved;
+      show(patchCard(boardRef.current, card.key, { text, date, description, priority, createdAt, updatedAt }));
+      return { ok: true, card: saved };
+    } catch (error) {
+      const status = String(error).match(/\d{3}/)?.[0];
+      if (status === "404") {
+        return { ok: false, message: "このタスクは見つかりませんでした。ほかの画面で削除された可能性があります。" };
+      }
+      if (status === "400") {
+        return { ok: false, message: "入力した内容を確認してください。" };
+      }
+      return { ok: false, message: "保存できませんでした。サーバーとデータベースを確認してください。" };
+    }
+  }
+
   return {
     board,
     ready,
@@ -97,6 +125,7 @@ export function useBoard() {
     // 最新のボード（描画を待たない）
     current: () => boardRef.current,
     add,
+    update,
     move: (key: string, targetId: ColumnId, beforeKey: string | null) =>
       persist(moveCard(boardRef.current, key, targetId, beforeKey)),
     remove: (key: string) => persist(removeCard(boardRef.current, key)),

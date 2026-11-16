@@ -11,6 +11,7 @@ type Props = {
   cards: Card[];
   searching: boolean;
   isDropTarget: boolean;
+  onOpen: (card: Card) => void;
   onDelete: (card: Card) => void;
   onToggleHidden: (card: Card) => void;
   onMove: (card: Card, targetId: ColumnId) => void;

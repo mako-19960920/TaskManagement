@@ -1,5 +1,5 @@
 // ボードを組み替える処理。画面（React）にも API にも依存しない
-import type { Board, Card, ColumnId, TaskResponse, TaskStatus } from "../types/task";
+import type { Board, Card, ColumnId, Priority, TaskResponse, TaskStatus } from "../types/task";
 
 // 左から並べる3列
 export const columns: { id: ColumnId; title: string; moveLabel: string }[] = [
@@ -43,6 +43,30 @@ export function formatCardDate(value: string): string {
   return `${match[1]}年${Number(match[2])}月${Number(match[3])}日`;
 }
 
+// 優先度の表示名（高い順）
+export const priorities: { value: Priority; label: string }[] = [
+  { value: "high", label: "高" },
+  { value: "medium", label: "中" },
+  { value: "low", label: "低" },
+];
+
+export function priorityLabel(priority: Priority): string {
+  return priorities.find((item) => item.value === priority)?.label ?? "中";
+}
+
+function toPriority(value: unknown): Priority {
+  return value === "high" || value === "low" ? value : "medium";
+}
+
+// 「2026-11-02T08:12:26.71」を「2026/11/2 8:12」にする。形が違えば空
+export function formatDateTime(value: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value);
+  if (!match) {
+    return "";
+  }
+  return `${match[1]}/${Number(match[2])}/${Number(match[3])} ${Number(match[4])}:${match[5]}`;
+}
+
 // API のタスク1件を、画面のカードにする
 export function cardFromTask(task: TaskResponse): Card {
   return {
@@ -51,6 +75,10 @@ export function cardFromTask(task: TaskResponse): Card {
     text: task.title,
     date: validDate(task.dueDate) ? task.dueDate : "",
     hidden: task.hidden === true,
+    description: task.description ?? "",
+    priority: toPriority(task.priority),
+    createdAt: task.createdAt ?? "",
+    updatedAt: task.updatedAt ?? "",
   };
 }
 
@@ -71,26 +99,48 @@ export function columnsFromTasks(tasks: unknown): Board {
   return board;
 }
 
-// PUT の応答に入っている id を、key が同じカードに付ける
+// PUT の応答から、サーバーが決める値（id、作成日時、更新日時）を、key が同じカードに付ける。
+// 文章や日付は付けない（保存を待つあいだに画面で変えた内容を、古い応答で上書きしないため）
 export function mergeIds(board: Board, saved: Board): Board {
-  const ids = new Map<string, number | null>();
+  const fromServer = new Map<string, Card>();
   for (const id of columnIds) {
     for (const item of saved[id]) {
       if (item && item.key) {
-        ids.set(item.key, item.id);
+        fromServer.set(item.key, item);
       }
     }
   }
   const next = emptyBoard();
   for (const id of columnIds) {
     next[id] = board[id].map((card) => {
-      if (!ids.has(card.key)) {
+      const item = fromServer.get(card.key);
+      if (!item) {
         return card;
       }
-      return { ...card, id: ids.get(card.key) ?? null };
+      return { ...card, id: item.id, createdAt: item.createdAt, updatedAt: item.updatedAt };
     });
   }
   return next;
+}
+
+// key のカードの一部の値を変える
+export function patchCard(board: Board, key: string, patch: Partial<Card>): Board {
+  const next = emptyBoard();
+  for (const id of columnIds) {
+    next[id] = board[id].map((card) => (card.key === key ? { ...card, ...patch } : card));
+  }
+  return next;
+}
+
+// id のカードと、それがある列を探す
+export function findById(board: Board, id: number): { card: Card; columnId: ColumnId } | null {
+  for (const columnId of columnIds) {
+    const card = board[columnId].find((item) => item.id === id);
+    if (card) {
+      return { card, columnId };
+    }
+  }
+  return null;
 }
 
 // key のカードを targetId の列へ移す。beforeKey があればその前、なければ末尾に入れる

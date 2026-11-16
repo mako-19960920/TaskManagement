@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -149,6 +150,43 @@ class TaskControllerTest {
 		mockMvc.perform(post("/api/tasks")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{ \"title\": \"  \" }"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void putTaskByIdUpdatesOne() throws Exception {
+		when(taskService.update(5L, new TaskUpdate("請求書を送る", "月末まで", "high", "2026-11-30")))
+				.thenReturn(sample(5L, "請求書を送る", "todo"));
+
+		mockMvc.perform(put("/api/tasks/5")
+				.header("Origin", "http://localhost:5173")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{ "title": "請求書を送る", "description": "月末まで", "priority": "high", "dueDate": "2026-11-30" }
+						"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(5))
+				.andExpect(jsonPath("$.title").value("請求書を送る"));
+	}
+
+	@Test
+	void putUnknownTaskReturnsNotFound() throws Exception {
+		when(taskService.update(any(Long.class), any(TaskUpdate.class))).thenThrow(new TaskNotFoundException(9L));
+
+		mockMvc.perform(put("/api/tasks/9")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{ \"title\": \"メモ\" }"))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void putInvalidTaskReturnsBadRequest() throws Exception {
+		when(taskService.update(any(Long.class), any(TaskUpdate.class)))
+				.thenThrow(new InvalidTaskException("title", "必須です"));
+
+		mockMvc.perform(put("/api/tasks/5")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{ \"title\": \"\" }"))
 				.andExpect(status().isBadRequest());
 	}
 
