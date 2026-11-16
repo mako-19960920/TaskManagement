@@ -2,6 +2,7 @@
 import { Board } from "./components/Board";
 import { SearchForm } from "./components/SearchForm";
 import { useBoard } from "./hooks/useBoard";
+import { useConfirm } from "./hooks/useConfirm";
 import { useSearch } from "./hooks/useSearch";
 import { findBoardKey, findCard } from "./lib/board";
 import type { Card, ColumnId } from "./types/task";
@@ -9,6 +10,7 @@ import type { Card, ColumnId } from "./types/task";
 export default function App() {
   const board = useBoard();
   const search = useSearch();
+  const { confirm, dialog } = useConfirm();
   const searching = search.result !== null;
   const shown = search.result ? search.result.columns : board.board;
 
@@ -45,8 +47,18 @@ export default function App() {
     search.moveInResult(card.key, targetId, null);
   }
 
-  // 削除ボタン。検索中は、検索結果の表示から消し、ボード側の同じカード（id で探す）も消して保存する
-  function deleteCard(card: Card) {
+  // 削除ボタン。先に「削除していいですか？」と確認する。
+  // 検索中は、検索結果の表示から消し、ボード側の同じカード（id で探す）も消して保存する
+  async function deleteCard(card: Card) {
+    const ok = await confirm({
+      title: "削除していいですか？",
+      target: card.text,
+      note: "削除すると元に戻せません。",
+      okLabel: "削除する",
+    });
+    if (!ok) {
+      return;
+    }
     if (!searching) {
       board.remove(card.key);
       return;
@@ -92,6 +104,7 @@ export default function App() {
       ) : (
         <p className="board-status">読み込み中</p>
       )}
+      {dialog}
     </>
   );
 }
