@@ -12,14 +12,30 @@ import type {
   TaskUpdateRequest,
 } from "../types/task";
 
-// API が失敗したとき。status はサーバーが返した数字（つながらなかったときは 0）
+// API が失敗したとき。status はサーバーが返した数字（つながらなかったときは 0）。
+// detail は、サーバーが返した理由（RFC 9457 の detail。例：「タイトルは必須です」）。ないときは空
 export class ApiError extends Error {
   readonly status: number;
+  readonly detail: string;
 
-  constructor(status: number) {
-    super(`API の呼び出しに失敗しました（${status}）`);
+  constructor(status: number, detail = "") {
+    super(detail || `API の呼び出しに失敗しました（${status}）`);
     this.status = status;
+    this.detail = detail;
   }
+}
+
+// エラーの応答（application/problem+json）から理由を取り出す。読めなければ空
+async function detailOf(response: Response): Promise<string> {
+  try {
+    const body: unknown = await response.json();
+    if (body && typeof body === "object" && "detail" in body && typeof body.detail === "string") {
+      return body.detail;
+    }
+  } catch {
+    // 本体が JSON でないときは、理由なし
+  }
+  return "";
 }
 
 async function call(url: string, init?: RequestInit): Promise<Response> {
@@ -30,7 +46,7 @@ async function call(url: string, init?: RequestInit): Promise<Response> {
     throw new ApiError(0);
   }
   if (!response.ok) {
-    throw new ApiError(response.status);
+    throw new ApiError(response.status, await detailOf(response));
   }
   return response;
 }

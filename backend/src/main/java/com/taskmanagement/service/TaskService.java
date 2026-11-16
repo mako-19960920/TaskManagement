@@ -64,7 +64,7 @@ public class TaskService {
 		LocalDate from = parseSearchDate("dueFrom", blankToNull(dueFrom));
 		LocalDate to = parseSearchDate("dueTo", blankToNull(dueTo));
 		if (from != null && to != null && from.isAfter(to)) {
-			throw new InvalidSearchConditionException("dueFrom", dueFrom + " > dueTo " + dueTo);
+			throw InvalidSearchConditionException.reversedRange(dueFrom, dueTo);
 		}
 		Specification<Task> spec = Specification.allOf(
 				TaskSpecifications.keyword(word),
@@ -128,7 +128,7 @@ public class TaskService {
 	@Transactional
 	public TaskResponse create(TaskCreate input) {
 		if (input == null) {
-			throw new InvalidTaskException("body", "空です");
+			throw new InvalidTaskException("body", "必須です");
 		}
 		int position = taskRepository.findFirstByStatusOrderByPositionDesc(TaskStatus.TODO)
 				.map(last -> last.getPosition() + 1)
@@ -149,7 +149,7 @@ public class TaskService {
 	public TaskResponse update(long id, TaskUpdate input) {
 		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
 		if (input == null) {
-			throw new InvalidTaskException("body", "空です");
+			throw new InvalidTaskException("body", "必須です");
 		}
 		applyFields(task, input.title(), input.description(), input.priority(), input.dueDate());
 		return toResponse(taskRepository.saveAndFlush(task), null);
@@ -164,7 +164,7 @@ public class TaskService {
 	public TaskResponse move(long id, TaskMove input) {
 		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
 		if (input == null) {
-			throw new InvalidTaskException("body", "空です");
+			throw new InvalidTaskException("body", "必須です");
 		}
 		TaskStatus target = parseStatus(input.status());
 		TaskStatus source = task.getStatus();

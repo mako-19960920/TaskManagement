@@ -188,6 +188,12 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 
 値が正しくないときや、`dueFrom` が `dueTo` より後のときは 400 を返します。
 
+エラーのときは、[RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)（Problem Details）の形で、理由を日本語で返します（`Content-Type: application/problem+json`）。詳しくは [docs/functional-requirements.md](docs/functional-requirements.md) の「2.9 エラーの応答」にあります。
+
+```json
+{ "title": "入力した値が正しくありません", "status": 400, "detail": "タイトルは必須です", "instance": "/api/tasks", "field": "title" }
+```
+
 例：
 
 ```

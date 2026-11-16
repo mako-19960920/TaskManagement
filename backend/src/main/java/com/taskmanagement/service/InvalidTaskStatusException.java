@@ -1,12 +1,13 @@
 package com.taskmanagement.service;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
-@ResponseStatus(HttpStatus.BAD_REQUEST)
+/** 状態（status）の値が正しくないとき（400） */
 public class InvalidTaskStatusException extends RuntimeException {
 
 	public InvalidTaskStatusException(String status) {
-		super("状態が不正です: " + status);
+		super("状態は todo / in_progress / done のいずれかです（送られた値：" + (status == null ? "なし" : status) + "）");
+	}
+
+	public String getField() {
+		return "status";
 	}
 }

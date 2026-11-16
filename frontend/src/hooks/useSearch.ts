@@ -1,6 +1,6 @@
 // 検索の条件と結果
 import { useState } from "react";
-import { searchBoard } from "../api/taskApi";
+import { ApiError, searchBoard } from "../api/taskApi";
 import { findCard, moveCard, patchCard, removeCard, setCardHidden } from "../lib/board";
 import type { Card, ColumnId, SearchConditions, SearchResult } from "../types/task";
 
@@ -20,8 +20,10 @@ export function useSearch() {
     try {
       setResult(await searchBoard(conditions));
       setError("");
-    } catch {
-      setError("検索できませんでした。条件を確認してください。");
+    } catch (reason) {
+      // サーバーが返した理由があれば、それを出す（例：「検索できませんでした。期限（から）が期限（まで）より後です（…）。」）
+      const detail = reason instanceof ApiError ? reason.detail : "";
+      setError(detail ? `検索できませんでした。${detail}。` : "検索できませんでした。条件を確認してください。");
     }
   }
 
