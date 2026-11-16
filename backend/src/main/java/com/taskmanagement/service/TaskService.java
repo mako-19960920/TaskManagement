@@ -187,6 +187,14 @@ public class TaskService {
 
 	@Transactional
 	public List<TaskResponse> replace(List<TaskWrite> inputs) {
+		// 1件でも長すぎるタイトルがあれば、何も変えずに 400 にする（データベースに入れる前に止める）
+		if (inputs != null) {
+			for (TaskWrite input : inputs) {
+				if (input != null && input.title() != null && input.title().strip().length() > TITLE_MAX) {
+					throw new InvalidTaskException("title", TITLE_MAX + " 文字までです");
+				}
+			}
+		}
 		Map<Long, Task> byId = new java.util.LinkedHashMap<>();
 		for (Task task : taskRepository.findAll()) {
 			byId.put(task.getId(), task);
