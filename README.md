@@ -248,7 +248,7 @@ TaskManagement/
 | ファイル | 内容 |
 | --- | --- |
 | [docs/requirements.md](docs/requirements.md) | 要件定義。目的、利用者、データの流れ、非機能要件、技術選定、対象外 |
-| [docs/functional-requirements.md](docs/functional-requirements.md) | 機能要件の一覧（F-01〜F-19）と、API の仕様と JSON の形 |
+| [docs/functional-requirements.md](docs/functional-requirements.md) | 機能要件の一覧（F-01〜F-19）、API の仕様と JSON の形、削除の決まり（削除 API の設計を含む） |
 | [docs/screen-design.md](docs/screen-design.md) | 画面の構成と流れ、寸法と色、入力チェック、ドラッグの手順 |
 | [docs/database-design.md](docs/database-design.md) | ER 図、テーブル定義、初期データ、接続先 |
 | [docs/tech-stack.md](docs/tech-stack.md) | 使う技術と、各技術のバージョン |

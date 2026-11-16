@@ -32,7 +32,7 @@ PC、タブレット、スマートフォンのブラウザで、自分のタス
 
 | 文書 | 内容 |
 | --- | --- |
-| [functional-requirements.md](functional-requirements.md) | 機能要件（F-01〜F-11）と API の仕様 |
+| [functional-requirements.md](functional-requirements.md) | 機能要件、API の仕様、削除の決まり |
 | [screen-design.md](screen-design.md) | 画面の構成、画面の流れ、寸法と色、入力チェック、ドラッグの手順 |
 | [database-design.md](database-design.md) | ER図、テーブル定義、初期データ、接続先 |
 | [tech-stack.md](tech-stack.md) | 使う技術とバージョン |
