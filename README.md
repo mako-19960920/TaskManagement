@@ -56,6 +56,8 @@ Trello のように、タスクをカードにして「やること」「進行�
 | データベース | DBMS | PostgreSQL（Docker） | 17.11 |
 | 開発環境 | コンテナ | Docker | 29.9.2 |
 
+カードのドラッグは、dnd-kit などのライブラリを使わず、ブラウザ標準の Pointer Events で自作しています（`frontend/src/hooks/useCardDrag.ts`）。理由は [docs/tech-stack.md](docs/tech-stack.md) の「ドラッグ」にあります。
+
 ライブラリごとの細かいバージョン（Hibernate、Jackson、JUnit など）は [docs/tech-stack.md](docs/tech-stack.md) にまとめています。
 
 ## しくみ

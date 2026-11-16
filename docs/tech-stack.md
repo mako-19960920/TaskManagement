@@ -20,6 +20,25 @@
 - Node.js、npm、Docker、Git は PC に入れたものを使う。表の版は、動作を確かめた PC のもの
 - PostgreSQL は `postgres:17` を指定している。かっこ内は実際に動いている版
 
+## ドラッグ
+
+カードのドラッグは、**dnd-kit などのドラッグ用ライブラリを使わず**、ブラウザ標準の Pointer Events で自作している。追加のパッケージは入れていない。
+
+| 項目 | 内容 |
+| --- | --- |
+| 使うしくみ | Pointer Events（`pointerdown`、`pointermove`、`pointerup`、`pointercancel`） |
+| 実装の場所 | `frontend/src/hooks/useCardDrag.ts` |
+| 使っていないもの | dnd-kit（`@dnd-kit/core`、`@dnd-kit/sortable`）、react-beautiful-dnd、HTML5 Drag and Drop API（`draggable` 属性） |
+| 手順 | [screen-design.md](screen-design.md) の「6. ドラッグ」 |
+
+自作にした理由は次のとおりである。
+
+- やりたいことは「3列のあいだの移動」と「同じ列の中の並べ替え」だけで、自作でも 100 行ほどで書ける
+- Pointer Events はマウス、タッチ、ペンを同じ手順で扱える。HTML5 Drag and Drop API は、スマートフォンのタッチでは動かなかったり、動きがブラウザごとに違ったりする
+- 依存するパッケージが増えないので、バージョンを上げる手間がない
+
+dnd-kit に切り替えるときは、`useCardDrag.ts` を置き換え、この節と [requirements.md](requirements.md) の技術選定、screen-design.md の「6. ドラッグ」を直す。
+
 ## API とデータ
 
 | 項目 | 採用 |
