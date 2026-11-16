@@ -8,7 +8,7 @@ type Props = {
   card: Card;
   columnId: ColumnId;
   searching: boolean;
-  onDelete: (key: string) => void;
+  onDelete: (card: Card) => void;
   onMove: (card: Card, targetId: ColumnId) => void;
   onChangeDate: (key: string, date: string) => void;
 };
@@ -47,11 +47,10 @@ export function TaskCard({ card, columnId, searching, onDelete, onMove, onChange
             onChange={(event) => onChangeDate(card.key, event.target.value)}
           />
         </div>
-        {searching ? null : (
-          <button className="delete-button" type="button" onClick={() => onDelete(card.key)}>
-            削除
-          </button>
-        )}
+        {/* 検索中も出す。検索中は、検索結果とボードの両方から消える */}
+        <button className="delete-button" type="button" onClick={() => onDelete(card)}>
+          削除
+        </button>
       </div>
       <div className="card-moves">
         {columns
