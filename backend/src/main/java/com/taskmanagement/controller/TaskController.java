@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.taskmanagement.service.TaskService;
 
@@ -55,7 +56,12 @@ public class TaskController {
 	@PostMapping
 	public ResponseEntity<TaskResponse> create(@RequestBody TaskCreate task) {
 		TaskResponse created = taskService.create(task);
-		return ResponseEntity.created(URI.create("/api/tasks/" + created.id())).body(created);
+		// 今のリクエストの URL（http://ホスト/api/tasks）の後ろに id を付けて、作ったタスクの URL にする
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+				.path("/{id}")
+				.buildAndExpand(created.id())
+				.toUri();
+		return ResponseEntity.created(location).body(created);
 	}
 
 	/** タスクを1件削除する。削除できたら 204、無ければ 404 */

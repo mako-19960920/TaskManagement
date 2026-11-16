@@ -1,6 +1,7 @@
 // 「やること」の最下部の追加欄
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
+import { TITLE_MAX } from "../lib/board";
 
 type Props = {
   // 登録できたら true
@@ -41,6 +42,8 @@ export function AddCardForm({ onAdd }: Props) {
         type="text"
         placeholder="カードを追加"
         required
+        // サーバーは 255 文字を超えるタイトルを受け付けないので、それより長くは入力させない
+        maxLength={TITLE_MAX}
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
       />

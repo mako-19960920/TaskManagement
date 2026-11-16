@@ -1,10 +1,11 @@
 spring:
   application:
     name: taskmanagement
+  # DB の接続先。環境変数（DB_URL・DB_USERNAME・DB_PASSWORD）があればそれを使い、無ければ : の後ろの値（開発用）を使う
   datasource:
-    url: jdbc:postgresql://localhost:5433/taskboard
-    username: taskboard
-    password: taskboard
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/taskboard}
+    username: ${DB_USERNAME:taskboard}
+    password: ${DB_PASSWORD:taskboard}
   jpa:
     open-in-view: false
     hibernate:

@@ -4,10 +4,17 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { UpdateResult } from "../hooks/useBoard";
-import { columns, formatCardDate, formatDateTime, priorities, priorityLabel, toPriority, validDate } from "../lib/board";
+import {
+  columns,
+  formatCardDate,
+  formatDateTime,
+  priorities,
+  priorityLabel,
+  TITLE_MAX,
+  toPriority,
+  validDate,
+} from "../lib/board";
 import type { Card, ColumnId, Priority, TaskUpdateRequest } from "../types/task";
-
-const TITLE_MAX = 255;
 
 type Props = {
   card: Card | null;

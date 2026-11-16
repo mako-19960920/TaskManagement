@@ -1,6 +1,9 @@
 // ボードを組み替える処理。画面（React）にも API にも依存しない
 import type { Board, Card, ColumnId, Priority, TaskResponse, TaskStatus } from "../types/task";
 
+// タイトルの最大の文字数（サーバーとデータベースの上限と同じ）
+export const TITLE_MAX = 255;
+
 // 左から並べる3列
 export const columns: { id: ColumnId; title: string; moveLabel: string }[] = [
   { id: "todo-cards", title: "やること", moveLabel: "やることへ" },
