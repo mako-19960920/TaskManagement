@@ -170,7 +170,9 @@ export default function App() {
       ) : (
         <p className="board-status">読み込み中</p>
       )}
+      {/* key に開くタスクの id を付け、閉じたときや別のタスクを開いたときに、編集中の内容を消す */}
       <TaskDetail
+        key={detailId ?? "closed"}
         card={detail?.card ?? null}
         columnId={detail?.columnId ?? null}
         onClose={() => setDetailId(null)}

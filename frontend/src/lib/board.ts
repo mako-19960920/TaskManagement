@@ -54,7 +54,8 @@ export function priorityLabel(priority: Priority): string {
   return priorities.find((item) => item.value === priority)?.label ?? "中";
 }
 
-function toPriority(value: unknown): Priority {
+// 優先度の文字を確かめて Priority にする。high・low 以外は medium
+export function toPriority(value: unknown): Priority {
   return value === "high" || value === "low" ? value : "medium";
 }
 
@@ -88,7 +89,7 @@ export function columnsFromTasks(tasks: unknown): Board {
   const items: TaskResponse[] = Array.isArray(tasks) ? tasks : [];
   const sorted = items
     .filter((item) => item && typeof item.title === "string")
-    .sort((left, right) => (left.position ?? 0) - (right.position ?? 0));
+    .toSorted((left, right) => (left.position ?? 0) - (right.position ?? 0));
   for (const item of sorted) {
     const columnId = statusToColumn[item.status];
     if (!columnId) {
@@ -121,27 +122,15 @@ export function findById(board: Board, id: number): { card: Card; columnId: Colu
 
 // key のカードを targetId の列へ移す。beforeKey があればその前、なければ末尾に入れる
 export function moveCard(board: Board, key: string, targetId: ColumnId, beforeKey: string | null): Board {
-  let moving: Card | null = null as Card | null;
-  const next = emptyBoard();
-  for (const id of columnIds) {
-    next[id] = board[id].filter((card) => {
-      if (card.key === key) {
-        moving = card;
-        return false;
-      }
-      return true;
-    });
-  }
+  const moving = findCard(board, key);
   if (!moving) {
     return board;
   }
+  // いったん外してから、行き先の列に入れる（removeCard は新しい配列を作るので、元のボードは変わらない）
+  const next = removeCard(board, key);
   const list = next[targetId];
   const index = beforeKey ? list.findIndex((card) => card.key === beforeKey) : -1;
-  if (index === -1) {
-    list.push(moving);
-  } else {
-    list.splice(index, 0, moving);
-  }
+  next[targetId] = index === -1 ? [...list, moving] : list.toSpliced(index, 0, moving);
   return next;
 }
 

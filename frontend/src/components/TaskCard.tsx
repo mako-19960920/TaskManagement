@@ -33,6 +33,7 @@ export function TaskCard({ card, columnId, searching, onOpen, onDelete, onToggle
   }
 
   return (
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- キーボードでは「詳細」ボタンで開ける。実際の画面では dnd-kit が role="button" を付ける
     <li
       ref={setNodeRef}
       // ドラッグ中、ほかのカードは入る場所をあけるためにずれる

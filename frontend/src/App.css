@@ -592,6 +592,19 @@ body {
   font-weight: 700;
 }
 
+/* ステータスのまとまり（<fieldset>）。ブラウザが付ける枠線と余白を消し、ほかの項目と同じ見た目にする */
+.detail-fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+/* <legend> はまとまりの並び（gap）に入らないので、下の余白を自分で付ける */
+.detail-fieldset > legend {
+  margin-bottom: 6px;
+  padding: 0;
+}
+
 .detail-text {
   margin: 0;
   font-size: 14px;
