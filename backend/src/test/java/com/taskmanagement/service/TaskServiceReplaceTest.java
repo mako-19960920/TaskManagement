@@ -1,7 +1,12 @@
 package com.taskmanagement.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -32,7 +37,7 @@ class TaskServiceReplaceTest {
 	void setUp() {
 		taskService = new TaskService(taskRepository);
 		// save されたタスクに、id がなければ 99 を付けて返す
-		when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> {
+		lenient().when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> {
 			Task task = invocation.getArgument(0);
 			if (task.getId() == null) {
 				ReflectionTestUtils.setField(task, "id", 99L);
@@ -80,6 +85,28 @@ class TaskServiceReplaceTest {
 		taskService.replace(List.of(new TaskWrite(1L, "1", "メールを返す", null, "todo", 0, null)));
 
 		assertThat(task.isHidden()).isTrue();
+	}
+
+	@Test
+	void titleOver255CharactersIsRejectedWithoutChanges() {
+		List<TaskWrite> inputs = List.of(
+				new TaskWrite(1L, "1", "メールを返す", null, "todo", 0, false),
+				new TaskWrite(null, "k", "あ".repeat(256), null, "todo", 1, false));
+
+		assertThatThrownBy(() -> taskService.replace(inputs)).isInstanceOf(InvalidTaskException.class);
+		// 何も保存も削除もしない
+		verify(taskRepository, never()).save(any(Task.class));
+		verify(taskRepository, never()).deleteAll(anyList());
+	}
+
+	@Test
+	void title255CharactersIsAccepted() {
+		when(taskRepository.findAll()).thenReturn(List.of());
+
+		List<TaskResponse> responses = taskService.replace(List.of(
+				new TaskWrite(null, "k", "あ".repeat(255), null, "todo", 0, false)));
+
+		assertThat(responses.get(0).title()).hasSize(255);
 	}
 
 	@Test
