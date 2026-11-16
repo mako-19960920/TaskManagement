@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC
+		"-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+		"https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+	Java のコードの書き方のチェック（gradlew.bat check で動く）。
+	インデントはタブ（Spring 本体と同じ書き方）なので、タブは禁止しない。
+-->
+<module name="Checker">
+	<property name="charset" value="UTF-8"/>
+	<property name="severity" value="error"/>
+
+	<!-- 1行は 140 文字まで（タブは4文字と数える） -->
+	<property name="tabWidth" value="4"/>
+	<module name="LineLength">
+		<property name="max" value="140"/>
+		<property name="ignorePattern" value="^import |^package "/>
+	</module>
+
+	<!-- ファイルの最後は改行で終える -->
+	<module name="NewlineAtEndOfFile"/>
+
+	<module name="TreeWalker">
+		<!-- import：* で読み込まない、使わないものや同じものを2回書かない -->
+		<module name="AvoidStarImport"/>
+		<module name="UnusedImports"/>
+		<module name="RedundantImport"/>
+
+		<!-- 名前の付け方：クラスは UpperCamelCase、メソッドや変数は lowerCamelCase、定数は UPPER_SNAKE_CASE -->
+		<module name="TypeName"/>
+		<module name="MethodName"/>
+		<module name="MemberName"/>
+		<module name="ParameterName"/>
+		<module name="LocalVariableName"/>
+		<module name="ConstantName"/>
+
+		<!-- if や for には、1行でも {} を付ける -->
+		<module name="NeedBraces"/>
+		<!-- 中身が空のブロックを作らない（catch で何もしないときは、理由をコメントに書く） -->
+		<module name="EmptyBlock">
+			<property name="option" value="text"/>
+		</module>
+
+		<!-- 宣言の順番：定数 → フィールド → コンストラクタ → メソッド -->
+		<module name="DeclarationOrder"/>
+
+		<!-- 1行に1つの文、1つの宣言 -->
+		<module name="OneStatementPerLine"/>
+		<module name="MultipleVariableDeclarations"/>
+
+		<!-- 修飾子の順番（public static final など）と、意味のない修飾子 -->
+		<module name="ModifierOrder"/>
+		<module name="RedundantModifier"/>
+
+		<!-- バグになりやすい書き方 -->
+		<module name="StringLiteralEquality"/>
+		<module name="EqualsHashCode"/>
+		<module name="SimplifyBooleanExpression"/>
+		<module name="SimplifyBooleanReturn"/>
+		<module name="MissingSwitchDefault"/>
+		<module name="FallThrough"/>
+
+		<!-- private コンストラクタだけのクラスは final にする -->
+		<module name="FinalClass"/>
+
+		<!-- long の数字は 1L のように大文字の L を使う（小文字の l は 1 と見分けにくい）。配列は String[] args の形 -->
+		<module name="UpperEll"/>
+		<module name="ArrayTypeStyle"/>
+	</module>
+</module>

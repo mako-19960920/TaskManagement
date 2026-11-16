@@ -101,7 +101,7 @@ class TaskControllerTest {
 	@Test
 	void searchWithInvalidConditionReturnsBadRequest() throws Exception {
 		when(taskService.search(null, null, "urgent", null, null))
-				.thenThrow(new InvalidSearchConditionException("priority", "urgent"));
+				.thenThrow(InvalidSearchConditionException.invalidValue("priority", "urgent"));
 
 		mockMvc.perform(get("/api/tasks/search").param("priority", "urgent"))
 				.andExpect(status().isBadRequest());
