@@ -53,6 +53,8 @@ export function useBoard() {
     setBoard(next);
   }
 
+  // ページを開いたときに1回だけ読む。
+  // show() は描画のたびに作り直される関数なので使わず、変わらない ref と setBoard を直接使う（依存配列を空にできる）
   useEffect(() => {
     let active = true;
     fetchBoard()
@@ -60,7 +62,8 @@ export function useBoard() {
         if (!active) {
           return;
         }
-        show(next);
+        boardRef.current = next;
+        setBoard(next);
         setReady(true);
       })
       .catch(() => {

@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { UpdateResult } from "../hooks/useBoard";
-import { columns, formatCardDate, formatDateTime, priorities, priorityLabel, validDate } from "../lib/board";
+import { columns, formatCardDate, formatDateTime, priorities, priorityLabel, toPriority, validDate } from "../lib/board";
 import type { Card, ColumnId, Priority, TaskUpdateRequest } from "../types/task";
 
 const TITLE_MAX = 255;
@@ -20,6 +20,8 @@ type Props = {
 
 type Draft = { title: string; description: string; priority: Priority; dueDate: string };
 
+// 呼び出し側（App.tsx）で、開くタスクの id を key に付ける。
+// key が変わると React がこの部品を作り直すので、閉じたときや別のタスクを開いたときに、編集中の内容とメッセージが消える
 export function TaskDetail({ card, columnId, onClose, onChangeStatus, onSave, onDelete }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [draft, setDraft] = useState<Draft | null>(null); // null のときは見るだけ
@@ -27,6 +29,7 @@ export function TaskDetail({ card, columnId, onClose, onChangeStatus, onSave, on
   const [message, setMessage] = useState("");
   const open = card !== null;
 
+  // <dialog> を開け閉めする（React の外にある DOM を動かすので、エフェクトで行う）
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) {
@@ -37,10 +40,6 @@ export function TaskDetail({ card, columnId, onClose, onChangeStatus, onSave, on
     }
     if (!open && dialog.open) {
       dialog.close();
-    }
-    if (!open) {
-      setDraft(null);
-      setMessage("");
     }
   }, [open]);
 
@@ -89,6 +88,7 @@ export function TaskDetail({ card, columnId, onClose, onChangeStatus, onSave, on
   const date = card ? formatCardDate(card.date) : "";
 
   return (
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- 外側のクリックで閉じる操作は、キーボードでは Esc キー（onCancel）でできる
     <dialog
       ref={dialogRef}
       className="detail-dialog"
@@ -145,7 +145,7 @@ export function TaskDetail({ card, columnId, onClose, onChangeStatus, onSave, on
                   <select
                     className="detail-input"
                     value={draft.priority}
-                    onChange={(event) => change("priority", event.target.value as Priority)}
+                    onChange={(event) => change("priority", toPriority(event.target.value))}
                   >
                     {priorities.map((item) => (
                       <option key={item.value} value={item.value}>
@@ -188,11 +188,10 @@ export function TaskDetail({ card, columnId, onClose, onChangeStatus, onSave, on
               </div>
               {card.hidden ? <span className="card-badge">非表示</span> : null}
 
-              <div className="detail-field">
-                <span className="detail-label" id="detail-status-label">
-                  ステータス
-                </span>
-                <div className="status-buttons" role="group" aria-labelledby="detail-status-label">
+              {/* ボタンのまとまりなので、HTML の <fieldset> と見出しの <legend> を使う */}
+              <fieldset className="detail-field detail-fieldset">
+                <legend className="detail-label">ステータス</legend>
+                <div className="status-buttons">
                   {columns.map((column) => {
                     const current = column.id === columnId;
                     return (
@@ -212,7 +211,7 @@ export function TaskDetail({ card, columnId, onClose, onChangeStatus, onSave, on
                     );
                   })}
                 </div>
-              </div>
+              </fieldset>
 
               <div className="detail-field">
                 <span className="detail-label">説明</span>

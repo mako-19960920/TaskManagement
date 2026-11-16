@@ -33,6 +33,7 @@ export function ConfirmDialog({ request, onAnswer }: Props) {
   }, [request]);
 
   return (
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- 外側のクリックで閉じる操作は、キーボードでは Esc キー（onCancel）でできる
     <dialog
       ref={dialogRef}
       className="confirm-dialog"
