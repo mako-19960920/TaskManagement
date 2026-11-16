@@ -1,5 +1,6 @@
-// カード1枚。文章、日付、日付の入力欄、削除ボタン、移動ボタン
-import type { PointerEvent as ReactPointerEvent } from "react";
+// カード1枚。文章、日付、日付の入力欄、削除ボタン、移動ボタン。ドラッグで並べ替えできる
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { columns, formatCardDate } from "../lib/board";
 import type { Card, ColumnId } from "../types/task";
 
@@ -7,18 +8,28 @@ type Props = {
   card: Card;
   columnId: ColumnId;
   searching: boolean;
-  dragging: boolean;
-  onPointerDown: (event: ReactPointerEvent<HTMLLIElement>) => void;
   onDelete: (key: string) => void;
   onMove: (card: Card, targetId: ColumnId) => void;
   onChangeDate: (key: string, date: string) => void;
 };
 
-export function TaskCard({ card, columnId, searching, dragging, onPointerDown, onDelete, onMove, onChangeDate }: Props) {
+export function TaskCard({ card, columnId, searching, onDelete, onMove, onChangeDate }: Props) {
+  const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
+    id: card.key,
+    attributes: { roleDescription: "並べ替えできるカード" },
+  });
   const date = formatCardDate(card.date);
 
   return (
-    <li className={dragging ? "card is-dragging" : "card"} data-key={card.key} onPointerDown={onPointerDown}>
+    <li
+      ref={setNodeRef}
+      // ドラッグ中、ほかのカードは入る場所をあけるためにずれる
+      style={{ transform: CSS.Translate.toString(transform), transition }}
+      className={isDragging ? "card is-dragging" : "card"}
+      data-key={card.key}
+      {...attributes}
+      {...listeners}
+    >
       <div className="card-top">
         <div className="card-main">
           <span className="card-text">{card.text}</span>
@@ -34,7 +45,6 @@ export function TaskCard({ card, columnId, searching, dragging, onPointerDown, o
             value={card.date}
             disabled={searching}
             onChange={(event) => onChangeDate(card.key, event.target.value)}
-            onPointerDown={(event) => event.stopPropagation()}
           />
         </div>
         {searching ? null : (
@@ -53,5 +63,16 @@ export function TaskCard({ card, columnId, searching, dragging, onPointerDown, o
           ))}
       </div>
     </li>
+  );
+}
+
+// ドラッグ中にポインタについてくるカード（文章と日付だけ）
+export function CardPreview({ card }: { card: Card }) {
+  const date = formatCardDate(card.date);
+  return (
+    <div className="card card-overlay">
+      <span className="card-text">{card.text}</span>
+      {date ? <time className="card-date">{date}</time> : null}
+    </div>
   );
 }

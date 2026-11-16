@@ -2,7 +2,6 @@
 import { Board } from "./components/Board";
 import { SearchForm } from "./components/SearchForm";
 import { useBoard } from "./hooks/useBoard";
-import { useCardDrag } from "./hooks/useCardDrag";
 import { useSearch } from "./hooks/useSearch";
 import { findBoardKey, findCard } from "./lib/board";
 import type { Card, ColumnId } from "./types/task";
@@ -32,8 +31,6 @@ export default function App() {
     }
     search.moveInResult(key, targetId, beforeKey);
   }
-
-  const drag = useCardDrag(dropCard);
 
   // 移動ボタン。行き先の列の末尾へ入れる。検索中はドラッグと同じく、ボード側も動かす
   function moveToEnd(card: Card, targetId: ColumnId) {
@@ -73,9 +70,7 @@ export default function App() {
         <Board
           cards={shown}
           searching={searching}
-          draggingKey={drag.draggingKey}
-          dropTarget={drag.dropTarget}
-          onPointerDown={drag.onPointerDown}
+          onDrop={dropCard}
           onDelete={board.remove}
           onMove={moveToEnd}
           onChangeDate={board.changeDate}
