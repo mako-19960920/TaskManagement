@@ -180,7 +180,9 @@ export function useBoard() {
         return { ok: false, message: "このタスクは見つかりませんでした。ほかの画面で削除された可能性があります。" };
       }
       if (status === 400) {
-        return { ok: false, message: "入力した内容を確認してください。" };
+        // サーバーが返した理由があれば、それを出す（例：「タイトルは 255 文字までです。」）
+        const detail = reason instanceof ApiError ? reason.detail : "";
+        return { ok: false, message: detail ? `${detail}。` : "入力した内容を確認してください。" };
       }
       return { ok: false, message: SAVE_FAILED };
     }
