@@ -1,6 +1,14 @@
 // API（/api/tasks）の呼び出し。失敗したら Error を投げる
 import { cardFromTask, columnIds, columnsFromTasks, columnToStatus, validDate } from "../lib/board";
-import type { Board, Card, SearchConditions, SearchResult, TaskCreateRequest, TaskResponse } from "../types/task";
+import type {
+  Board,
+  Card,
+  SearchConditions,
+  SearchResult,
+  TaskCreateRequest,
+  TaskResponse,
+  TaskUpdateRequest,
+} from "../types/task";
 
 // 全件を読み、3列に分けて返す
 export async function fetchBoard(): Promise<Board> {
@@ -20,6 +28,20 @@ export async function createTask(request: TaskCreateRequest): Promise<Card> {
   });
   if (!response.ok) {
     throw new Error("create failed");
+  }
+  const task: TaskResponse = await response.json();
+  return cardFromTask(task);
+}
+
+// タスクを1件編集し（タイトル・説明・優先度・期限）、編集後のカードを返す
+export async function updateTask(id: number, request: TaskUpdateRequest): Promise<Card> {
+  const response = await fetch(`/api/tasks/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+  if (!response.ok) {
+    throw new Error(`update failed: ${response.status}`);
   }
   const task: TaskResponse = await response.json();
   return cardFromTask(task);

@@ -1,8 +1,8 @@
 // 検索の条件と結果
 import { useState } from "react";
 import { searchBoard } from "../api/taskApi";
-import { findCard, moveCard, removeCard, setCardHidden } from "../lib/board";
-import type { ColumnId, SearchConditions, SearchResult } from "../types/task";
+import { findCard, moveCard, patchCard, removeCard, setCardHidden } from "../lib/board";
+import type { Card, ColumnId, SearchConditions, SearchResult } from "../types/task";
 
 export const emptyConditions: SearchConditions = { keyword: "", status: "", priority: "", dueFrom: "", dueTo: "" };
 
@@ -53,8 +53,14 @@ export function useSearch() {
     setResult((current) => (current ? { ...current, columns: setCardHidden(current.columns, key, hidden) } : current));
   }
 
+  // 検索結果の表示の中で、カードの値を変える（編集の結果を出す）
+  function patchInResult(key: string, patch: Partial<Card>) {
+    setResult((current) => (current ? { ...current, columns: patchCard(current.columns, key, patch) } : current));
+  }
+
   return {
     conditions,
+    patchInResult,
     result,
     error,
     changeCondition,

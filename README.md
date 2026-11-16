@@ -30,6 +30,7 @@ Trello のように、タスクをカードにして「やること」「進行�
 - 「やること」にカードを追加する。期限の日付も入れられる（空でもよい）
 - カードの日付をあとから変える
 - カードを削除する（「削除していいですか？」と確認してから消す）
+- カードを押すと「タスク詳細」の画面が開く。ステータスの切り替え、説明・優先度・期限・作成日・更新日の確認、編集（タイトル・説明・優先度・期限）、削除ができる
 - カードを非表示にする。非表示にしたカードは、ボードの下の「非表示のタスク」欄に集まり、「表示に戻す」で元の位置に戻る
 - 「進行中へ」「完了へ」などのボタンで、別の列の末尾へ移す
 - カードをドラッグして、別の列や同じ列の好きな位置へ移す（マウス、タッチ、キーボードで動く。ドラッグ中は入る場所が見える）
@@ -169,6 +170,7 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 | GET | `/api/tasks/status/{status}` | その列のカードを返す。`status` は `todo` / `in_progress` / `done`。それ以外は 400 |
 | GET | `/api/tasks/search` | 条件に合うタスクを返す（下の表） |
 | POST | `/api/tasks` | タスクを1件登録する。必須は `title` だけ。「やること」の末尾に入り、201 を返す。値が正しくないときは 400 |
+| PUT | `/api/tasks/{id}` | タスクを1件編集する（タイトル・説明・優先度・期限）。無ければ 404、値が正しくないときは 400 |
 | PUT | `/api/tasks` | 画面の3列ぶんの配列で、タスクをまとめて置き換える。配列に無いカードは削除される。`hidden` で非表示かどうかも保存する |
 
 `GET /api/tasks/search` の条件は、どれも省略できます。指定したものをすべて満たすタスクだけを返します。
@@ -232,10 +234,11 @@ TaskManagement/
 │       │   ├── SearchForm.tsx  … 検索フォーム
 │       │   ├── Board.tsx       … 3列を横に並べる
 │       │   ├── Column.tsx      … 列1つ
-│       │   ├── TaskCard.tsx    … カード1枚（日付、非表示、削除、移動）
+│       │   ├── TaskCard.tsx    … カード1枚（日付、詳細、非表示、削除、移動）
 │       │   ├── AddCardForm.tsx … やることの追加欄
 │       │   ├── ConfirmDialog.tsx … 削除の確認画面
-│       │   └── HiddenPanel.tsx … ボードの下の非表示欄
+│       │   ├── HiddenPanel.tsx … ボードの下の非表示欄
+│       │   └── TaskDetail.tsx  … タスク詳細の画面（見る・編集）
 │       ├── hooks/           … 画面の状態と動き
 │       │   ├── useBoard.ts     … ボードの読み込みと保存（書き込みは1つずつ順番に送る）
 │       │   ├── useSearch.ts    … 検索の条件と結果
@@ -254,7 +257,7 @@ TaskManagement/
 | ファイル | 内容 |
 | --- | --- |
 | [docs/requirements.md](docs/requirements.md) | 要件定義。目的、利用者、データの流れ、非機能要件、技術選定、対象外 |
-| [docs/functional-requirements.md](docs/functional-requirements.md) | 機能要件の一覧（F-01〜F-25）、API の仕様と JSON の形、削除の決まり（削除 API の設計を含む）、非表示の決まり |
+| [docs/functional-requirements.md](docs/functional-requirements.md) | 機能要件の一覧（F-01〜F-27）、API の仕様と JSON の形、削除の決まり（削除 API の設計を含む）、非表示の決まり、タスク詳細の決まり |
 | [docs/screen-design.md](docs/screen-design.md) | 画面の構成と流れ、寸法と色、入力チェック、ドラッグの手順 |
 | [docs/database-design.md](docs/database-design.md) | ER 図、テーブル定義、初期データ、接続先 |
 | [docs/tech-stack.md](docs/tech-stack.md) | 使う技術と、各技術のバージョン |

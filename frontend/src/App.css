@@ -471,3 +471,291 @@ body {
 .show-button:hover {
   background: #dfe1e6;
 }
+
+/* カードの「詳細」ボタン */
+.open-button {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #5e6c84;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.open-button:hover {
+  background: #dfe1e6;
+  color: #172b4d;
+}
+
+/* カードを押すと詳細画面が開くので、文章の上ではそれと分かるカーソルにする */
+.card .card-text {
+  cursor: pointer;
+}
+
+/* タスク詳細の画面 */
+.detail-dialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  color: #172b4d;
+  box-shadow: 0 12px 24px rgba(9, 30, 66, 0.3);
+}
+
+.detail-dialog::backdrop {
+  background: rgba(9, 30, 66, 0.5);
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid #dfe1e6;
+}
+
+.detail-heading {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.detail-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #5e6c84;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.detail-close:hover {
+  background: #dfe1e6;
+  color: #172b4d;
+}
+
+.detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.detail-edit {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border: 1px solid #0079bf;
+  border-radius: 6px;
+  background: #fff;
+  color: #0079bf;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.detail-edit:hover {
+  background: #e4f0f6;
+}
+
+.detail-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.detail-label {
+  color: #5e6c84;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.detail-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.detail-text.is-empty {
+  color: #5e6c84;
+}
+
+.detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+}
+
+.status-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.status-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #e4e6ea;
+  color: #172b4d;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.status-button:hover {
+  background: #dfe1e6;
+}
+
+.status-button.is-current {
+  background: #0079bf;
+  color: #fff;
+  font-weight: 700;
+  cursor: default;
+}
+
+/* 優先度の印 */
+.priority-badge {
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.priority-high {
+  background: #c9372c;
+  color: #fff;
+}
+
+.priority-medium {
+  background: #f5cd47;
+  color: #172b4d;
+}
+
+.priority-low {
+  background: #0c66e4;
+  color: #fff;
+}
+
+.detail-meta {
+  margin: 0;
+  padding: 12px 0;
+  border-top: 1px solid #dfe1e6;
+  border-bottom: 1px solid #dfe1e6;
+  color: #5e6c84;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.detail-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid #c9372c;
+  border-radius: 6px;
+  background: #fff;
+  color: #c9372c;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.detail-delete:hover {
+  background: #ffebe6;
+}
+
+/* 編集するとき */
+.detail-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #c1c7d0;
+  border-radius: 6px;
+  color: #172b4d;
+  font: inherit;
+  font-size: 14px;
+}
+
+.detail-textarea {
+  resize: vertical;
+}
+
+.detail-row .detail-field {
+  flex: 1 1 160px;
+}
+
+.detail-error {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #ffebe6;
+  color: #ae2e24;
+  font-size: 13px;
+}
+
+.detail-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.detail-cancel,
+.detail-save {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.detail-cancel {
+  background: #e4e6ea;
+  color: #172b4d;
+}
+
+.detail-save {
+  background: #0079bf;
+  color: #fff;
+  font-weight: 700;
+}
+
+.detail-save:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.detail-close:focus-visible,
+.detail-edit:focus-visible,
+.status-button:focus-visible,
+.detail-delete:focus-visible,
+.detail-cancel:focus-visible,
+.detail-save:focus-visible,
+.detail-input:focus-visible {
+  outline: 2px solid #0079bf;
+  outline-offset: 2px;
+}

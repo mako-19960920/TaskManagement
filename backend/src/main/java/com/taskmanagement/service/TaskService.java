@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.taskmanagement.controller.TaskCreate;
 import com.taskmanagement.controller.TaskResponse;
+import com.taskmanagement.controller.TaskUpdate;
 import com.taskmanagement.controller.TaskWrite;
 import com.taskmanagement.entity.Priority;
 import com.taskmanagement.entity.Task;
@@ -126,7 +127,34 @@ public class TaskService {
 		if (input == null) {
 			throw new InvalidTaskException("body", "空です");
 		}
-		String title = input.title() == null ? "" : input.title().strip();
+		int position = taskRepository.findFirstByStatusOrderByPositionDesc(TaskStatus.TODO)
+				.map(last -> last.getPosition() + 1)
+				.orElse(0);
+
+		Task task = new Task();
+		applyFields(task, input.title(), input.description(), input.priority(), input.dueDate());
+		task.setStatus(TaskStatus.TODO);
+		task.setPosition(position);
+		return toResponse(taskRepository.save(task), null);
+	}
+
+	/**
+	 * タスクを1件編集する。タイトル・説明・優先度・期限を、送られた値に置き換える（省略した説明と期限はなし、優先度は medium）。
+	 * 状態・順番・非表示は変えない。
+	 */
+	@Transactional
+	public TaskResponse update(long id, TaskUpdate input) {
+		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+		if (input == null) {
+			throw new InvalidTaskException("body", "空です");
+		}
+		applyFields(task, input.title(), input.description(), input.priority(), input.dueDate());
+		return toResponse(taskRepository.save(task), null);
+	}
+
+	/** 登録と編集で共通の入力チェック。正しければ task に値を入れ、正しくなければ 400（InvalidTaskException）にする */
+	private void applyFields(Task task, String titleText, String description, String priorityText, String dueDateText) {
+		String title = titleText == null ? "" : titleText.strip();
 		if (title.isEmpty()) {
 			throw new InvalidTaskException("title", "必須です");
 		}
@@ -134,35 +162,27 @@ public class TaskService {
 			throw new InvalidTaskException("title", TITLE_MAX + " 文字までです");
 		}
 		Priority priority = Priority.MEDIUM;
-		String priorityText = blankToNull(input.priority());
-		if (priorityText != null) {
+		String priorityValue = blankToNull(priorityText);
+		if (priorityValue != null) {
 			try {
-				priority = Priority.from(priorityText);
+				priority = Priority.from(priorityValue);
 			}
 			catch (IllegalArgumentException exception) {
 				throw new InvalidTaskException("priority", "high / medium / low のいずれかです");
 			}
 		}
 		LocalDate dueDate = null;
-		String dueDateText = blankToNull(input.dueDate());
-		if (dueDateText != null) {
-			dueDate = parseDate(dueDateText);
+		String dueDateValue = blankToNull(dueDateText);
+		if (dueDateValue != null) {
+			dueDate = parseDate(dueDateValue);
 			if (dueDate == null) {
 				throw new InvalidTaskException("dueDate", "YYYY-MM-DD の形です");
 			}
 		}
-		int position = taskRepository.findFirstByStatusOrderByPositionDesc(TaskStatus.TODO)
-				.map(last -> last.getPosition() + 1)
-				.orElse(0);
-
-		Task task = new Task();
 		task.setTitle(title);
-		task.setDescription(blankToNull(input.description()));
+		task.setDescription(blankToNull(description));
 		task.setPriority(priority);
 		task.setDueDate(dueDate);
-		task.setStatus(TaskStatus.TODO);
-		task.setPosition(position);
-		return toResponse(taskRepository.save(task), null);
 	}
 
 	@Transactional

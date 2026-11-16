@@ -57,6 +57,12 @@ public class TaskController {
 		return ResponseEntity.created(URI.create("/api/tasks/" + created.id())).body(created);
 	}
 
+	/** タスクを1件編集する（タイトル・説明・優先度・期限）。無ければ 404、値が不正なら 400 */
+	@PutMapping("/{id}")
+	public TaskResponse update(@PathVariable long id, @RequestBody TaskUpdate task) {
+		return taskService.update(id, task);
+	}
+
 	@PutMapping
 	public List<TaskResponse> replace(@RequestBody List<TaskWrite> tasks) {
 		return taskService.replace(tasks);
