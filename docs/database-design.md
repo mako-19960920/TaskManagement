@@ -95,6 +95,12 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 | ユーザー | `taskboard` |
 | パスワード | `taskboard` |
 
-これは開発環境専用の値である。本番環境では、推測されにくいパスワードを使い、設定ファイルに直接書かずに環境変数などで渡す。
+これは開発環境専用の値である。本番環境では、推測されにくいパスワードを使い、設定ファイルに直接書かずに環境変数で渡す。
 
-設定は `docker-compose.yml` と `backend/src/main/resources/application.yml` にある。
+設定は `docker-compose.yml` と `backend/src/main/resources/application.yml` にある。API の接続先は、次の環境変数があればそれを使い、無ければ上の開発用の値を使う。
+
+| 環境変数 | 意味 | 無いときの値 |
+| --- | --- | --- |
+| `DB_URL` | 接続先の URL | `jdbc:postgresql://localhost:5433/taskboard` |
+| `DB_USERNAME` | ユーザー | `taskboard` |
+| `DB_PASSWORD` | パスワード | `taskboard` |

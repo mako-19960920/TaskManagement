@@ -8,7 +8,7 @@ Trello のように、タスクをカードにして「やること」「進行�
 - [技術スタック](#技術スタック)
 - [しくみ](#しくみ)
 - [はじめかた](#はじめかた)
-- [テスト・型チェック・ビルド](#テスト型チェックビルド)
+- [テスト・Lint・型チェック・ビルド](#テストlint型チェックビルド)
 - [API](#api)
 - [フォルダ構成](#フォルダ構成)
 - [ドキュメント](#ドキュメント)
@@ -138,7 +138,7 @@ powershell -ExecutionPolicy Bypass -File scripts\start-servers.ps1
 | ユーザー | `taskboard` |
 | パスワード | `taskboard` |
 
-**開発環境専用の値です。** 本番環境では、推測されにくいパスワードを使い、設定ファイルに直接書かずに環境変数などで渡してください。設定は `docker-compose.yml` と `backend/src/main/resources/application.yml` にあります。
+**開発環境専用の値です。** 本番環境では、推測されにくいパスワードを使い、設定ファイルに直接書かずに環境変数で渡してください。API は、環境変数 `DB_URL`・`DB_USERNAME`・`DB_PASSWORD` があればそれを使い、無ければ上の値を使います。設定は `docker-compose.yml` と `backend/src/main/resources/application.yml` にあります。
 
 ### 初期データとテストデータ
 
@@ -149,13 +149,17 @@ powershell -ExecutionPolicy Bypass -File scripts\start-servers.ps1
 docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.sql
 ```
 
-## テスト・型チェック・ビルド
+## テスト・Lint・型チェック・ビルド
 
 | やること | 場所 | コマンド |
 | --- | --- | --- |
 | バックエンドのテスト | `backend` | `gradlew.bat test` |
+| バックエンドのチェック（テスト・Checkstyle・コンパイラの警告） | `backend` | `gradlew.bat check` |
+| フロントエンドの Lint（Oxlint） | `frontend` | `npm run lint` |
 | フロントエンドの型チェック | `frontend` | `npm run typecheck` |
 | フロントエンドのビルド（型チェック込み） | `frontend` | `npm run build` |
+
+Lint は、コードを動かす前に読んで、標準から外れた書き方やバグになりやすい書き方を見つける道具です。指摘が0件の状態を保ちます。使っているルールと、ESLint ではなく Oxlint にした理由は [docs/tech-stack.md](docs/tech-stack.md) の「Lint」にあります。
 
 バックエンドのテストは、データベースを使わずに動きます（Controller は `@WebMvcTest`、Service は Mockito）。ビルドの結果は `frontend/dist/` にできます（Git では管理しません）。
 
@@ -219,7 +223,8 @@ TaskManagement/
 │   └── start-servers.ps1   … DB・API・画面をまとめて起動する
 ├── logs/                   … 起動のログ（Git では管理しない）
 ├── backend/                … API（Spring Boot）
-│   ├── build.gradle.kts    … 使うライブラリとバージョン
+│   ├── build.gradle.kts    … 使うライブラリとバージョン、Checkstyle とコンパイラの警告の設定
+│   ├── config/checkstyle/checkstyle.xml … Checkstyle のルール
 │   ├── db/test-data.sql    … 検索を試すためのテストデータ
 │   └── src/
 │       ├── main/java/com/taskmanagement/
@@ -234,6 +239,7 @@ TaskManagement/
 │       └── test/            … テスト
 ├── frontend/               … 画面（React + TypeScript）
 │   ├── package.json        … 使うパッケージとバージョン、npm のコマンド
+│   ├── .oxlintrc.json      … Lint（Oxlint）のルール
 │   ├── vite.config.ts      … ポートと /api の転送の設定
 │   └── src/
 │       ├── main.tsx         … 画面の入口

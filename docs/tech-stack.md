@@ -15,6 +15,8 @@
 | データベース | DBMS | PostgreSQL（Docker、ホストの 5433） | 17（17.11） |
 | 開発環境 | コンテナ | Docker | 29.9.2 |
 | 開発環境 | バージョン管理 | Git | 2.56.0 |
+| 開発環境 | コードのチェック（画面） | Oxlint | 1.93.0 |
+| 開発環境 | コードのチェック（API） | Checkstyle | 14.4.0 |
 
 - Gradle は `gradlew.bat`（Gradle Wrapper）が 8.14.3 をダウンロードして使うので、どの PC でも同じ版になる
 - Node.js、npm、Docker、Git は PC に入れたものを使う。表の版は、動作を確かめた PC のもの
@@ -42,6 +44,31 @@ dnd-kit にした理由は次のとおりである。
 - ドラッグ中にほかのカードがずれて、入る場所が見える
 - React 用に作られていて、HTML5 Drag and Drop API と違い、スマートフォンのタッチでも同じように動く
 
+## Lint（コードのチェック）
+
+コードを動かす前に読んで、標準から外れた書き方やバグになりやすい書き方を見つける。指摘が0件の状態を保つ。
+
+| 対象 | ツール | コマンド | 設定 | 見ているもの |
+| --- | --- | --- | --- | --- |
+| 画面 | Oxlint（型を使うチェックは oxlint-tsgolint） | `frontend` で `npm run lint` | `frontend/.oxlintrc.json` | React のフックの決まり（`react-hooks`）、TypeScript、アクセシビリティ（`jsx-a11y`）、import など |
+| API | Checkstyle | `backend` で `gradlew.bat check`（テストも一緒に動く） | `backend/config/checkstyle/checkstyle.xml` | import、名前の付け方、`{}` の付け忘れ、宣言の順番、文字列の `==` 比較、1行 140 文字までなど |
+| API | javac の警告（`-Xlint:all`、`-Werror`） | 同上（コンパイルのたびに動く） | `backend/build.gradle.kts` | 非推奨の書き方、型があいまいな所など。警告もエラーとして止める |
+
+画面に ESLint ではなく Oxlint を使う理由は次のとおりである。
+
+- ESLint で TypeScript を読む部品（typescript-eslint 8.72）は、TypeScript 6.1 未満にしか対応しておらず、このプロジェクトの TypeScript 7 では使えない
+- Oxlint は ESLint と同じルール名（`react-hooks/exhaustive-deps` など）を使え、TypeScript 7 でも動く。Vite 8 と同じ開発元の系列（oxc）である
+
+Checkstyle は、インデントのタブを禁止しない（Spring 本体と同じく、タブでインデントしているため）。
+
+ルールを止めている所は、理由をコメントに書く。
+
+| 場所 | 止めているルール | 理由 |
+| --- | --- | --- |
+| `.oxlintrc.json` | `react/react-in-jsx-scope` | React 16 までの決まり。React 17 からは JSX のために React を import しなくてよい |
+| `ConfirmDialog.tsx`、`TaskDetail.tsx` の `<dialog>` | `jsx-a11y` のクリックとキーボードのルール | 外側のクリックで閉じる操作は、キーボードでは Esc キーでできる |
+| `TaskCard.tsx` の `<li>` | 同上 | キーボードでは「詳細」ボタンで開ける。実際の画面では dnd-kit が `role="button"` を付ける |
+
 ## API とデータ
 
 | 項目 | 採用 |
@@ -62,6 +89,7 @@ dnd-kit にした理由は次のとおりである。
 | Gradle | 8.14.3 | 8.14.3 | `gradle/wrapper/gradle-wrapper.properties` |
 | Spring Boot | 4.1.2 | 4.1.2 | `plugins` |
 | Spring Dependency Management プラグイン | 1.1.7 | 1.1.7 | `plugins` |
+| Checkstyle | 14.4.0 | 14.4.0 | `checkstyle.toolVersion` |
 
 次のライブラリは、Spring Boot 4.1.2 がバージョンを決める（自分では書かない）。
 
@@ -92,6 +120,8 @@ dnd-kit にした理由は次のとおりである。
 | @vitejs/plugin-react | ^6.3.0 | 6.3.0 | Vite で React を扱う |
 | @types/react | ^19.3.0 | 19.3.0 | React の型定義 |
 | @types/react-dom | ^19.3.0 | 19.3.0 | React DOM の型定義 |
+| oxlint | ^1.93.0 | 1.93.0 | コードのチェック（Lint） |
+| oxlint-tsgolint | ^7.0.2007 | 7.0.2007 | Oxlint で型を使うチェック（TypeScript 7 用） |
 
 ### データベース（`docker-compose.yml`）
 
