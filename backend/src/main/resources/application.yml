@@ -9,12 +9,13 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
-    defer-datasource-initialization: true
-  sql:
-    init:
-      mode: always
-      encoding: UTF-8
+      # テーブルは Flyway が作る。Hibernate は Task クラスとテーブルが合っているかを確かめるだけ（合わなければ起動しない）
+      ddl-auto: validate
+  # テーブルの作成と変更（src/main/resources/db/migration の V1、V2 …）と、初期データ（afterMigrate.sql）
+  flyway:
+    # Flyway を入れる前からあるデータベース（テーブルはあるが、Flyway の記録が無い）は、「V1 まで済み」として扱う
+    baseline-on-migrate: true
+    baseline-version: 1
 
 server:
   port: 8080

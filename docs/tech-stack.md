@@ -77,6 +77,7 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 | API の形式 | JSON（REST）。一覧と仕様は [functional-requirements.md](functional-requirements.md) の「2. API」 |
 | 入力チェック | Bean Validation（`spring-boot-starter-validation`）。受け取るクラス（`TaskCreate`・`TaskUpdate`・`TaskHidden`）の項目に `@NotBlank`・`@Size`・`@Pattern`・`@NotNull` を付け、Controller の `@Valid` で調べる。決まり（上限の数、エラー文）は `dto/TaskInputRules.java` にまとめる。期限の日付が存在するか（2月30日など）は印では調べられないので、`TaskService` で調べる |
 | テーブル | `tasks`。定義は [database-design.md](database-design.md) |
+| テーブルの作成と変更 | Flyway。版番号を付けた SQL（`src/main/resources/db/migration/V1__…sql` など）で管理し、起動時にまだ流していない版を流す。Hibernate は `ddl-auto: validate` で、クラスとテーブルが合っているかを確かめるだけ |
 
 ## バージョン
 
@@ -99,6 +100,7 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 | Spring Framework（spring-webmvc） | 7.0.10 | API の受け口 |
 | Tomcat（組み込み） | 11.0.27 | Web サーバー |
 | Hibernate ORM | 7.4.13.Final | Java のクラスとテーブルの対応（JPA） |
+| Flyway（`flyway-core`、`flyway-database-postgresql`） | 12.4.0 | テーブルの作成と変更（マイグレーション） |
 | Jackson | 3.1.7 | JSON の読み書き |
 | PostgreSQL JDBC ドライバ | 42.7.14 | データベースへの接続 |
 | JUnit Jupiter | 6.0.3 | テスト |

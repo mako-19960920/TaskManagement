@@ -8,16 +8,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
+/**
+ * tasks テーブルの1行。
+ * テーブル（列、既定値、制約、インデックス）は Flyway の SQL（src/main/resources/db/migration）で作る。
+ * 起動時に Hibernate が、このクラスとテーブルが合っているかを確かめる（ddl-auto: validate）。
+ */
 @Entity
-@Table(name = "tasks", indexes = {
-		@Index(name = "idx_tasks_status", columnList = "status"),
-		@Index(name = "idx_tasks_status_position", columnList = "status, position")
-})
+@Table(name = "tasks")
 public class Task {
 
 	@Id
@@ -42,8 +43,8 @@ public class Task {
 	@Column(nullable = false)
 	private int position;
 
-	// 非表示かどうか。今ある行にも入るように、はじめの値（false）を列の定義に含める
-	@Column(nullable = false, columnDefinition = "boolean default false not null")
+	// 非表示かどうか
+	@Column(nullable = false)
 	private boolean hidden;
 
 	@Column(name = "created_at", nullable = false)

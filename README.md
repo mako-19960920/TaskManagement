@@ -142,7 +142,8 @@ powershell -ExecutionPolicy Bypass -File scripts\start-servers.ps1
 
 ### 初期データとテストデータ
 
-- `tasks` テーブルが空のまま API を起動すると、`backend/src/main/resources/data.sql` が各列2件ずつ、計6件のカードを入れます
+- テーブルは Flyway が作ります（`backend/src/main/resources/db/migration/` の `V1__…sql`、`V2__…sql`）。API を起動すると、まだ流していない版だけを順に流します。詳しくは [docs/database-design.md](docs/database-design.md) の「3. テーブルの作成と初期データ」にあります
+- `tasks` テーブルが空のまま API を起動すると、`backend/src/main/resources/db/migration/afterMigrate.sql` が各列2件ずつ、計6件のカードを入れます
 - 検索を試すためのテストデータは `backend/db/test-data.sql` にあります。何回流しても同じタイトルは二重に入りません。`TaskManagement` フォルダで次を実行します
 
 ```
@@ -236,7 +237,7 @@ TaskManagement/
 │       │   └── entity/      … テーブルに対応するクラス
 │       ├── main/resources/
 │       │   ├── application.yml … DB の接続先とポート
-│       │   └── data.sql     … 初期データ（6件）
+│       │   └── db/migration/ … テーブルを作る SQL（Flyway の V1、V2 …）と初期データ（afterMigrate.sql）
 │       └── test/            … テスト
 ├── frontend/               … 画面（React + TypeScript）
 │   ├── package.json        … 使うパッケージとバージョン、npm のコマンド
