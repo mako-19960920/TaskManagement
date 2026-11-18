@@ -76,6 +76,8 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 | API | JUnit、Mockito、MockMvc（`@WebMvcTest`） | `backend` で `gradlew.bat test`（`check` にも含まれる） | `backend/src/test/java/` | API の応答とエラーの形、入力チェック、Service の処理。データベースは使わない |
 | 画面 | Vitest | `frontend` で `npm test` | `frontend/src/**/*.test.ts` | ボードを組み替える関数（`lib/board.ts`）。ブラウザは使わず、Node.js の上で動かす |
 
+テストと Lint は、GitHub Actions（`.github/workflows/ci.yml`）でも、PR を作ったとき・更新したときと `main` にマージしたときに自動で動く。backend（Java 21、`./gradlew check`）と frontend（Node.js 24、`npm ci` のあと lint・typecheck・test・build）の2つのジョブを同時に動かす。
+
 画面のテストは、Vitest を直接ではなく `frontend/scripts/vitest.mjs` から動かす。Windows では、ターミナルの今のフォルダのドライブ名が小文字（`c:...`、VS Code のターミナルで起きやすい）のことがあり、そのまま動かすと、Vitest の本体とテストのファイルが別々の書き方（`c:` と `C:`）で読み込まれて、「Vitest failed to find the current suite」のエラーでテストが1件も動かない。このスクリプトは、ドライブ名を大文字にそろえてから Vitest を動かす。
 
 ## API とデータ

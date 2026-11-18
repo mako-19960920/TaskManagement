@@ -1,0 +1,73 @@
+# 自動チェック（CI）。PR を作ったとき・更新したときと、main にマージしたときに動く。
+# backend と frontend の2つのジョブを同時に動かし、結果を PR に ✅ / ❌ で出す。
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# 中身を読むだけで、書き込みはしない
+permissions:
+  contents: read
+
+# 同じ PR に続けてプッシュしたときは、古いほうの実行を止めて新しいほうだけ動かす
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: backend（テスト・Checkstyle）
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: コードを取ってくる
+        uses: actions/checkout@v7
+
+      - name: Java 21 を用意する
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Gradle を用意する（ダウンロードした部品を次の実行でも使い回す）
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: テスト・Checkstyle・コンパイラの警告
+        run: ./gradlew check
+
+  frontend:
+    name: frontend（Lint・型・テスト・ビルド）
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: コードを取ってくる
+        uses: actions/checkout@v7
+
+      - name: Node.js 24 を用意する（npm の部品を次の実行でも使い回す）
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 部品を入れる（package-lock.json のとおりに）
+        run: npm ci
+
+      - name: Lint（Oxlint）
+        run: npm run lint
+
+      - name: 型チェック
+        run: npm run typecheck
+
+      - name: テスト（Vitest）
+        run: npm test
+
+      - name: ビルド
+        run: npm run build
