@@ -156,13 +156,14 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 | --- | --- | --- |
 | バックエンドのテスト | `backend` | `gradlew.bat test` |
 | バックエンドのチェック（テスト・Checkstyle・コンパイラの警告） | `backend` | `gradlew.bat check` |
+| フロントエンドのテスト（Vitest） | `frontend` | `npm test` |
 | フロントエンドの Lint（Oxlint） | `frontend` | `npm run lint` |
 | フロントエンドの型チェック | `frontend` | `npm run typecheck` |
 | フロントエンドのビルド（型チェック込み） | `frontend` | `npm run build` |
 
 Lint は、コードを動かす前に読んで、標準から外れた書き方やバグになりやすい書き方を見つける道具です。指摘が0件の状態を保ちます。使っているルールと、ESLint ではなく Oxlint にした理由は [docs/tech-stack.md](docs/tech-stack.md) の「Lint」にあります。
 
-バックエンドのテストは、データベースを使わずに動きます（Controller は `@WebMvcTest`、Service は Mockito）。ビルドの結果は `frontend/dist/` にできます（Git では管理しません）。
+バックエンドのテストは、データベースを使わずに動きます（Controller は `@WebMvcTest`、Service は Mockito）。フロントエンドのテストは、ボードを組み替える関数（`src/lib/board.ts`）を、ブラウザを使わずに確かめます（`src/lib/board.test.ts`）。ビルドの結果は `frontend/dist/` にできます（Git では管理しません）。
 
 ## API
 
@@ -243,6 +244,7 @@ TaskManagement/
 │   ├── package.json        … 使うパッケージとバージョン、npm のコマンド
 │   ├── .oxlintrc.json      … Lint（Oxlint）のルール
 │   ├── vite.config.ts      … ポートと /api の転送の設定
+│   ├── scripts/vitest.mjs  … npm test から Vitest を動かす（Windows のドライブ名の大文字・小文字をそろえる）
 │   └── src/
 │       ├── main.tsx         … 画面の入口
 │       ├── App.tsx          … 画面全体。部品と hooks を組み合わせ、検索中の移動をまとめる
@@ -264,6 +266,7 @@ TaskManagement/
 │       │   └── useCardDrag.ts  … カードのドラッグ（dnd-kit）
 │       ├── api/taskApi.ts   … API の呼び出し
 │       ├── lib/board.ts     … ボードを組み替える処理（React に依存しない）
+│       ├── lib/board.test.ts … board.ts のテスト（Vitest）
 │       └── types/task.ts    … 型
 └── prototype/              … サーバーへ保存する前の静的な試作（HTML / CSS / JS）
 ```
