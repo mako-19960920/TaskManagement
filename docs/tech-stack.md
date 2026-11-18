@@ -50,7 +50,7 @@ dnd-kit にした理由は次のとおりである。
 
 | 対象 | ツール | コマンド | 設定 | 見ているもの |
 | --- | --- | --- | --- | --- |
-| 画面 | Oxlint（型を使うチェックは oxlint-tsgolint） | `frontend` で `npm run lint` | `frontend/.oxlintrc.json` | React のフックの決まり（`react-hooks`）、TypeScript、アクセシビリティ（`jsx-a11y`）、import など |
+| 画面 | Oxlint（型を使うチェックは oxlint-tsgolint） | `frontend` で `npm run lint` | `frontend/.oxlintrc.json` | React のフックの決まり（`react-hooks`）、TypeScript、アクセシビリティ（`jsx-a11y`）、import、テストの書き方（`vitest`）など |
 | API | Checkstyle | `backend` で `gradlew.bat check`（テストも一緒に動く） | `backend/config/checkstyle/checkstyle.xml` | import、名前の付け方、`{}` の付け忘れ、宣言の順番、文字列の `==` 比較、1行 140 文字までなど |
 | API | javac の警告（`-Xlint:all`、`-Werror`） | 同上（コンパイルのたびに動く） | `backend/build.gradle.kts` | 非推奨の書き方、型があいまいな所など。警告もエラーとして止める |
 
@@ -68,6 +68,15 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 | `.oxlintrc.json` | `react/react-in-jsx-scope` | React 16 までの決まり。React 17 からは JSX のために React を import しなくてよい |
 | `ConfirmDialog.tsx`、`TaskDetail.tsx` の `<dialog>` | `jsx-a11y` のクリックとキーボードのルール | 外側のクリックで閉じる操作は、キーボードでは Esc キーでできる |
 | `TaskCard.tsx` の `<li>` | 同上 | キーボードでは「詳細」ボタンで開ける。実際の画面では dnd-kit が `role="button"` を付ける |
+
+## テスト
+
+| 対象 | ツール | コマンド | 場所 | 確かめていること |
+| --- | --- | --- | --- | --- |
+| API | JUnit、Mockito、MockMvc（`@WebMvcTest`） | `backend` で `gradlew.bat test`（`check` にも含まれる） | `backend/src/test/java/` | API の応答とエラーの形、入力チェック、Service の処理。データベースは使わない |
+| 画面 | Vitest | `frontend` で `npm test` | `frontend/src/**/*.test.ts` | ボードを組み替える関数（`lib/board.ts`）。ブラウザは使わず、Node.js の上で動かす |
+
+画面のテストは、Vitest を直接ではなく `frontend/scripts/vitest.mjs` から動かす。Windows では、ターミナルの今のフォルダのドライブ名が小文字（`c:...`、VS Code のターミナルで起きやすい）のことがあり、そのまま動かすと、Vitest の本体とテストのファイルが別々の書き方（`c:` と `C:`）で読み込まれて、「Vitest failed to find the current suite」のエラーでテストが1件も動かない。このスクリプトは、ドライブ名を大文字にそろえてから Vitest を動かす。
 
 ## API とデータ
 
@@ -119,6 +128,7 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 | @dnd-kit/sortable | ^10.0.0 | 10.0.0 | 列の中の並べ替え |
 | @dnd-kit/utilities | ^3.2.2 | 3.2.2 | ドラッグ中のずれを CSS にする |
 | typescript | ^7.0.2 | 7.0.2 | 型チェック |
+| vitest | ^5.1.0 | 5.1.0 | テスト（`npm test`） |
 | vite | ^8.3.6 | 8.3.6 | 開発サーバーとビルド |
 | @vitejs/plugin-react | ^6.3.0 | 6.3.0 | Vite で React を扱う |
 | @types/react | ^19.3.0 | 19.3.0 | React の型定義 |
