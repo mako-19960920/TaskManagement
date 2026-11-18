@@ -1,5 +1,7 @@
 # タスクボード
 
+[![CI](https://github.com/mako-19960920/TaskManagement/actions/workflows/ci.yml/badge.svg)](https://github.com/mako-19960920/TaskManagement/actions/workflows/ci.yml)
+
 Trello のように、タスクをカードにして「やること」「進行中」「完了」の3列で管理する Web アプリです。カードは追加・削除・ドラッグで動かせ、並びはデータベースに保存されるので、ページを開き直しても残ります。
 
 ## 目次
@@ -163,6 +165,8 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 
 Lint は、コードを動かす前に読んで、標準から外れた書き方やバグになりやすい書き方を見つける道具です。指摘が0件の状態を保ちます。使っているルールと、ESLint ではなく Oxlint にした理由は [docs/tech-stack.md](docs/tech-stack.md) の「Lint」にあります。
 
+PR を作ったとき・更新したときと、`main` にマージしたときは、GitHub Actions（`.github/workflows/ci.yml`）が上のチェックを自動で動かし、結果を PR に ✅ / ❌ で出します。❌ のときは、PR の「Checks」タブで、どの手順で失敗したかを見られます。
+
 バックエンドのテストは、データベースを使わずに動きます（Controller は `@WebMvcTest`、Service は Mockito）。フロントエンドのテストは、ボードを組み替える関数（`src/lib/board.ts`）を、ブラウザを使わずに確かめます（`src/lib/board.test.ts`）。ビルドの結果は `frontend/dist/` にできます（Git では管理しません）。
 
 ## API
@@ -219,6 +223,7 @@ JSON の形は [docs/functional-requirements.md](docs/functional-requirements.md
 ```
 TaskManagement/
 ├── README.md               … このファイル
+├── .github/workflows/ci.yml … 自動チェック（CI）の設定
 ├── docker-compose.yml      … PostgreSQL の起動設定
 ├── docs/                   … 設計書（要件、機能、画面、テーブル、技術）
 ├── scripts/

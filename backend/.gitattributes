@@ -1,2 +1,4 @@
-/mvnw text eol=lf
-*.cmd text eol=crlf
+# 改行の扱い。gradlew（Linux・Mac 用）は LF、gradlew.bat（Windows 用）は CRLF にする（Spring Initializr の Gradle の形）
+/gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary
