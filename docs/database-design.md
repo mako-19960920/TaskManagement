@@ -65,18 +65,30 @@ CHECK 制約で、次を守る。
 
 | 制約名 | 内容 | 作るもの |
 | --- | --- | --- |
-| `tasks_values_check` | 上の3つすべて | `data.sql` |
-| `tasks_priority_check` | `priority` の値 | Spring Boot（JPA）が、Java の列挙型から自動で作る |
-| `tasks_status_check` | `status` の値 | Spring Boot（JPA）が、Java の列挙型から自動で作る |
+| `tasks_values_check` | 上の3つすべて | Flyway の `V1__create_tasks.sql` |
+
+以前は、同じ意味の `tasks_priority_check` と `tasks_status_check` も付いていた（Hibernate が自動で作っていたもの）。重なっていたので、`V2__remove_duplicate_checks.sql` で外した。
 
 ## 3. テーブルの作成と初期データ
 
-| 内容 | 担当 | 場所 |
+テーブルは **Flyway**（マイグレーションの道具）で作り、変える。変更は、版番号を付けた SQL ファイルで管理する。API を起動すると、Flyway がまだ流していない版だけを番号の順に流し、流した記録をデータベースの `flyway_schema_history` テーブルに残す。
+
+| 内容 | 担当 | 場所（`backend/src/main/resources/db/migration/`） |
 | --- | --- | --- |
-| テーブル、列、インデックス | Spring Boot（JPA）が、起動時に `Task` クラスから作る | `backend/src/main/java/com/taskmanagement/entity/Task.java` |
-| 制約、デフォルト値 | 起動時に SQL で設定する | `backend/src/main/resources/data.sql` |
-| 初期データ | `tasks` が空のときだけ、各列2件ずつ計6件を入れる | `backend/src/main/resources/data.sql` |
+| テーブル、列、デフォルト値、制約、インデックス | Flyway の V1。新しいデータベースでだけ流れる | `V1__create_tasks.sql` |
+| 重なっていた CHECK 制約を外す | Flyway の V2 | `V2__remove_duplicate_checks.sql` |
+| 初期データ | Flyway が起動のたびに、マイグレーションのあとで流す。`tasks` が空のときだけ、各列2件ずつ計6件を入れる | `afterMigrate.sql` |
 | 検索を試すためのテストデータ | 手動で流す。同じタイトルは二重に入らない | `backend/db/test-data.sql` |
+
+- Hibernate（JPA）はテーブルを作らない。起動時に、`Task` クラスとテーブルが合っているかだけを確かめる（`application.yml` の `ddl-auto: validate`）。合わなければ API は起動しない。
+- Flyway を入れる前からあるデータベース（テーブルはあるが、Flyway の記録が無い）は、はじめて起動したときに「V1 まで済み」として記録する（`baseline-on-migrate`）。V1 は流さないので、データはそのまま残る。
+- テーブルを変えるときは、流し済みの SQL は書き換えない。次の番号のファイル（例：`V3__add_xxx.sql`）を足し、`Task` クラスも合わせて直す。
+
+流し済みの版は、次のように確かめられる。
+
+```
+docker compose exec -T db psql -U taskboard -d taskboard -c "SELECT version, description, installed_on FROM flyway_schema_history ORDER BY installed_rank"
+```
 
 テストデータは、`TaskManagement` フォルダで次のように流す。
 
