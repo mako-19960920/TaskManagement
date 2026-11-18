@@ -20,10 +20,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.taskmanagement.controller.TaskDueDate;
-import com.taskmanagement.controller.TaskHidden;
-import com.taskmanagement.controller.TaskMove;
-import com.taskmanagement.controller.TaskResponse;
+import com.taskmanagement.dto.TaskDueDate;
+import com.taskmanagement.dto.TaskHidden;
+import com.taskmanagement.dto.TaskMove;
+import com.taskmanagement.dto.TaskResponse;
 import com.taskmanagement.entity.Task;
 import com.taskmanagement.entity.TaskStatus;
 import com.taskmanagement.repository.TaskRepository;

@@ -21,6 +21,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import com.taskmanagement.dto.TaskCreate;
+import com.taskmanagement.dto.TaskResponse;
 import com.taskmanagement.service.TaskService;
 
 /**
