@@ -12,13 +12,11 @@ public class InvalidTaskException extends RuntimeException {
 	@Serial
 	private static final long serialVersionUID = 1L;
 
+	// タイトルの必須・文字数と、優先度・非表示の値は、Controller の @Valid（Bean Validation）で調べる。
+	// ここに来るのは、期限の日付が存在しないときと、まとめて保存（PUT /api/tasks）でタイトルが長すぎるとき
 	private static final Map<String, String> LABELS = Map.of(
 			"title", "タイトル",
-			"description", "説明",
-			"priority", "優先度",
-			"dueDate", "期限",
-			"hidden", "非表示",
-			"body", "本体");
+			"dueDate", "期限");
 
 	private final String field;
 

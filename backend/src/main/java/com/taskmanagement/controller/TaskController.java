@@ -3,6 +3,8 @@ package com.taskmanagement.controller;
 import java.net.URI;
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,9 +54,9 @@ public class TaskController {
 		return taskService.findById(id);
 	}
 
-	/** タスクを1件登録する。作れたら 201 と、作ったタスクの URL（Location）を返す。 */
+	/** タスクを1件登録する。作れたら 201 と、作ったタスクの URL（Location）を返す。値が正しくなければ、@Valid で止まって 400 */
 	@PostMapping
-	public ResponseEntity<TaskResponse> create(@RequestBody TaskCreate task) {
+	public ResponseEntity<TaskResponse> create(@Valid @RequestBody TaskCreate task) {
 		TaskResponse created = taskService.create(task);
 		// 今のリクエストの URL（http://ホスト/api/tasks）の後ろに id を付けて、作ったタスクの URL にする
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -85,13 +87,13 @@ public class TaskController {
 
 	/** 非表示かどうかだけを変える。無ければ 404、hidden を省略したら 400 */
 	@PutMapping("/{id}/hidden")
-	public TaskResponse changeHidden(@PathVariable long id, @RequestBody TaskHidden hidden) {
+	public TaskResponse changeHidden(@PathVariable long id, @Valid @RequestBody TaskHidden hidden) {
 		return taskService.changeHidden(id, hidden);
 	}
 
 	/** タスクを1件編集する（タイトル・説明・優先度・期限）。無ければ 404、値が不正なら 400 */
 	@PutMapping("/{id}")
-	public TaskResponse update(@PathVariable long id, @RequestBody TaskUpdate task) {
+	public TaskResponse update(@PathVariable long id, @Valid @RequestBody TaskUpdate task) {
 		return taskService.update(id, task);
 	}
 

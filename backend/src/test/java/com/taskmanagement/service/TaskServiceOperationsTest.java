@@ -195,12 +195,9 @@ class TaskServiceOperationsTest {
 		assertThat(all.get(1).isHidden()).isFalse();
 	}
 
+	// hidden の省略は、Controller の @Valid で 400 にする（TaskValidationTest）
 	@Test
-	void changeHiddenRequiresValue() {
-		assertThatThrownBy(() -> taskService.changeHidden(2L, new TaskHidden(null)))
-				.isInstanceOf(InvalidTaskException.class);
-		assertThatThrownBy(() -> taskService.changeHidden(2L, null))
-				.isInstanceOf(InvalidTaskException.class);
+	void changeHiddenUnknownIdIsNotFound() {
 		when(taskRepository.findById(99L)).thenReturn(Optional.empty());
 		assertThatThrownBy(() -> taskService.changeHidden(99L, new TaskHidden(true)))
 				.isInstanceOf(TaskNotFoundException.class);

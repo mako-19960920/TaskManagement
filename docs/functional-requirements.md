@@ -160,7 +160,7 @@ GET /api/tasks/search?keyword=メール&priority=high
 
 - 状態（`status`）、順番（`position`）、非表示（`hidden`）は変えない。
 - 成功したら 200 と、編集後のタスク（2.4 の形）を返す。更新日時は新しくなる。
-- その id のタスクが無ければ 404、値が不正なら 400 を返し、何も変えない。
+- その id のタスクが無ければ 404、値が不正なら 400 を返し、何も変えない。値のチェックは id のタスクを探すより先に行うので、両方に当てはまるときは 400 になる。
 
 ### 2.6 移動（PUT /api/tasks/{id}/position）
 
@@ -196,6 +196,8 @@ GET /api/tasks/search?keyword=メール&priority=high
 ### 2.9 エラーの応答
 
 エラーのときは、RFC 9457（Problem Details）の形で、理由を日本語で返す。`Content-Type` は `application/problem+json` である。
+
+登録（2.2）・編集（2.5）・非表示（2.8）の値は、Bean Validation（Controller の `@Valid`）で調べる。タイトルと説明などの前後の空白は、受け取ったときに除き、除いたあとの値を調べる。間違いが2つ以上あるときは、タイトル → 優先度 → 期限の順で、1つ目だけを返す。
 
 ```json
 { "title": "入力した値が正しくありません", "status": 400, "detail": "タイトルは必須です", "instance": "/api/tasks", "field": "title" }

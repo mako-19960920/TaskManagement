@@ -86,17 +86,13 @@ class TaskServiceUpdateTest {
 		verify(taskRepository, never()).saveAndFlush(any());
 	}
 
+	// タイトルの必須・文字数と優先度の値は、Controller の @Valid で調べる（TaskValidationTest）。
+	// 期限の日付が存在するかは、印では調べられないので Service で調べる
 	@Test
-	void invalidValuesAreRejectedWithoutSaving() {
-		assertThatThrownBy(() -> taskService.update(5L, new TaskUpdate("  ", null, null, null)))
-				.isInstanceOf(InvalidTaskException.class);
-		assertThatThrownBy(() -> taskService.update(5L, new TaskUpdate("あ".repeat(256), null, null, null)))
-				.isInstanceOf(InvalidTaskException.class);
-		assertThatThrownBy(() -> taskService.update(5L, new TaskUpdate("メモ", null, "urgent", null)))
-				.isInstanceOf(InvalidTaskException.class);
+	void invalidDueDateIsRejectedWithoutSaving() {
 		assertThatThrownBy(() -> taskService.update(5L, new TaskUpdate("メモ", null, null, "2026/11/30")))
 				.isInstanceOf(InvalidTaskException.class);
-		assertThatThrownBy(() -> taskService.update(5L, null))
+		assertThatThrownBy(() -> taskService.update(5L, new TaskUpdate("メモ", null, null, "2026-02-30")))
 				.isInstanceOf(InvalidTaskException.class);
 		verify(taskRepository, never()).saveAndFlush(any());
 		// 失敗したときは、元の値のまま

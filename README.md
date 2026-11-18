@@ -229,8 +229,8 @@ TaskManagement/
 │   └── src/
 │       ├── main/java/com/taskmanagement/
 │       │   ├── config/      … CORS の設定
-│       │   ├── controller/  … API の受け口（URL と JSON）
-│       │   ├── service/     … 処理の中身（保存、検索、入力のチェック）
+│       │   ├── controller/  … API の受け口（URL と JSON、入力のチェック）
+│       │   ├── service/     … 処理の中身（保存、検索、期限の日付のチェック）
 │       │   ├── repository/  … データベースの読み書き
 │       │   └── entity/      … テーブルに対応するクラス
 │       ├── main/resources/
