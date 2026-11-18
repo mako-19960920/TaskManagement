@@ -59,11 +59,11 @@ class ApiErrorResponseTest {
 	@Test
 	void reasonStartingWithLettersHasSpace() throws Exception {
 		when(taskService.create(any(TaskCreate.class)))
-				.thenThrow(new InvalidTaskException("priority", "high / medium / low のいずれかです"));
+				.thenThrow(new InvalidTaskException("dueDate", "YYYY-MM-DD の形です"));
 
 		mockMvc.perform(post("/api/tasks").contentType(MediaType.APPLICATION_JSON).content("{ \"title\": \"x\" }"))
-				.andExpect(jsonPath("$.detail").value("優先度は high / medium / low のいずれかです"))
-				.andExpect(jsonPath("$.field").value("priority"));
+				.andExpect(jsonPath("$.detail").value("期限は YYYY-MM-DD の形です"))
+				.andExpect(jsonPath("$.field").value("dueDate"));
 	}
 
 	@Test

@@ -93,17 +93,6 @@ class TaskServiceCreateTest {
 	}
 
 	@Test
-	void blankTitleIsRejected() {
-		assertThatThrownBy(() -> taskService.create(new TaskCreate(" \t\n", null, null, null)))
-				.isInstanceOf(InvalidTaskException.class);
-		assertThatThrownBy(() -> taskService.create(new TaskCreate(null, null, null, null)))
-				.isInstanceOf(InvalidTaskException.class);
-		assertThatThrownBy(() -> taskService.create(null))
-				.isInstanceOf(InvalidTaskException.class);
-		verify(taskRepository, never()).save(any());
-	}
-
-	@Test
 	void titleUpTo255CharactersIsAccepted() {
 		when(taskRepository.findFirstByStatusOrderByPositionDesc(TaskStatus.TODO)).thenReturn(Optional.empty());
 		ArgumentCaptor<Task> saved = captureSave();
@@ -113,20 +102,8 @@ class TaskServiceCreateTest {
 		assertThat(saved.getValue().getTitle()).hasSize(255);
 	}
 
-	@Test
-	void titleOver255CharactersIsRejected() {
-		assertThatThrownBy(() -> taskService.create(new TaskCreate("あ".repeat(256), null, null, null)))
-				.isInstanceOf(InvalidTaskException.class);
-		verify(taskRepository, never()).save(any());
-	}
-
-	@Test
-	void unknownPriorityIsRejected() {
-		assertThatThrownBy(() -> taskService.create(new TaskCreate("メモ", null, "urgent", null)))
-				.isInstanceOf(InvalidTaskException.class);
-		verify(taskRepository, never()).save(any());
-	}
-
+	// タイトルの必須・文字数と優先度の値は、Controller の @Valid で調べる（TaskValidationTest）。
+	// 期限の日付が存在するかは、印では調べられないので Service で調べる
 	@Test
 	void invalidDueDateIsRejected() {
 		assertThatThrownBy(() -> taskService.create(new TaskCreate("メモ", null, null, "2026/11/20")))

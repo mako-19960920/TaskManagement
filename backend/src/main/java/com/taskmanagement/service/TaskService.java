@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.taskmanagement.controller.TaskCreate;
 import com.taskmanagement.controller.TaskDueDate;
 import com.taskmanagement.controller.TaskHidden;
+import com.taskmanagement.controller.TaskInputRules;
 import com.taskmanagement.controller.TaskMove;
 import com.taskmanagement.controller.TaskResponse;
 import com.taskmanagement.controller.TaskUpdate;
@@ -42,9 +43,6 @@ public class TaskService {
 	private static final Comparator<Task> BOARD_ORDER = Comparator
 			.comparingInt((Task task) -> STATUS_ORDER.indexOf(task.getStatus()))
 			.thenComparingInt(Task::getPosition);
-
-	/** タイトルの最大の文字数（データベースの title 列は varchar(255)） */
-	private static final int TITLE_MAX = 255;
 
 	private final TaskRepository taskRepository;
 
@@ -130,9 +128,6 @@ public class TaskService {
 	 */
 	@Transactional
 	public TaskResponse create(TaskCreate input) {
-		if (input == null) {
-			throw new InvalidTaskException("body", "必須です");
-		}
 		int position = taskRepository.findFirstByStatusOrderByPositionDesc(TaskStatus.TODO)
 				.map(last -> last.getPosition() + 1)
 				.orElse(0);
@@ -151,9 +146,6 @@ public class TaskService {
 	@Transactional
 	public TaskResponse update(long id, TaskUpdate input) {
 		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
-		if (input == null) {
-			throw new InvalidTaskException("body", "必須です");
-		}
 		applyFields(task, input.title(), input.description(), input.priority(), input.dueDate());
 		return toResponse(taskRepository.saveAndFlush(task), null);
 	}
@@ -166,9 +158,6 @@ public class TaskService {
 	@Transactional
 	public TaskResponse move(long id, TaskMove input) {
 		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
-		if (input == null) {
-			throw new InvalidTaskException("body", "必須です");
-		}
 		TaskStatus target = parseStatus(input.status());
 		TaskStatus source = task.getStatus();
 
@@ -213,7 +202,7 @@ public class TaskService {
 	@Transactional
 	public TaskResponse changeDueDate(long id, TaskDueDate input) {
 		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
-		String value = input == null ? null : blankToNull(input.dueDate());
+		String value = blankToNull(input.dueDate());
 		LocalDate dueDate = null;
 		if (value != null) {
 			dueDate = parseDate(value);
@@ -225,13 +214,10 @@ public class TaskService {
 		return toResponse(taskRepository.saveAndFlush(task), null);
 	}
 
-	/** 非表示かどうかだけを変える。列の中の順番は変えない */
+	/** 非表示かどうかだけを変える。列の中の順番は変えない。hidden の省略は、Controller の @Valid で 400 にしている */
 	@Transactional
 	public TaskResponse changeHidden(long id, TaskHidden input) {
 		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
-		if (input == null || input.hidden() == null) {
-			throw new InvalidTaskException("hidden", "true か false です");
-		}
 		task.setHidden(input.hidden());
 		return toResponse(taskRepository.saveAndFlush(task), null);
 	}
@@ -247,36 +233,22 @@ public class TaskService {
 		}
 	}
 
-	/** 登録と編集で共通の入力チェック。正しければ task に値を入れ、正しくなければ 400（InvalidTaskException）にする */
-	private void applyFields(Task task, String titleText, String description, String priorityText, String dueDateText) {
-		String title = titleText == null ? "" : titleText.strip();
-		if (title.isEmpty()) {
-			throw new InvalidTaskException("title", "必須です");
-		}
-		if (title.length() > TITLE_MAX) {
-			throw new InvalidTaskException("title", TITLE_MAX + " 文字までです");
-		}
-		Priority priority = Priority.MEDIUM;
-		String priorityValue = blankToNull(priorityText);
-		if (priorityValue != null) {
-			try {
-				priority = Priority.from(priorityValue);
-			}
-			catch (IllegalArgumentException exception) {
-				throw new InvalidTaskException("priority", "high / medium / low のいずれかです");
-			}
-		}
+	/**
+	 * 登録と編集で共通の、値の入れ方。
+	 * タイトルと優先度は、Controller の @Valid で調べ済み（空白も除いてある）。
+	 * 期限の日付が存在するか（2月30日など）は印では調べられないので、ここで調べて、正しくなければ 400（InvalidTaskException）にする。
+	 */
+	private void applyFields(Task task, String title, String description, String priority, String dueDateText) {
 		LocalDate dueDate = null;
-		String dueDateValue = blankToNull(dueDateText);
-		if (dueDateValue != null) {
-			dueDate = parseDate(dueDateValue);
+		if (dueDateText != null) {
+			dueDate = parseDate(dueDateText);
 			if (dueDate == null) {
 				throw new InvalidTaskException("dueDate", "YYYY-MM-DD の形です");
 			}
 		}
 		task.setTitle(title);
-		task.setDescription(blankToNull(description));
-		task.setPriority(priority);
+		task.setDescription(description);
+		task.setPriority(priority == null ? Priority.MEDIUM : Priority.from(priority));
 		task.setDueDate(dueDate);
 	}
 
@@ -285,8 +257,8 @@ public class TaskService {
 		// 1件でも長すぎるタイトルがあれば、何も変えずに 400 にする（データベースに入れる前に止める）
 		if (inputs != null) {
 			for (TaskWrite input : inputs) {
-				if (input != null && input.title() != null && input.title().strip().length() > TITLE_MAX) {
-					throw new InvalidTaskException("title", TITLE_MAX + " 文字までです");
+				if (input != null && input.title() != null && input.title().strip().length() > TaskInputRules.TITLE_MAX) {
+					throw new InvalidTaskException("title", TaskInputRules.TITLE_MAX + " 文字までです");
 				}
 			}
 		}
