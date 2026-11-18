@@ -1,4 +1,4 @@
-package com.taskmanagement.controller;
+package com.taskmanagement.dto;
 
 /**
  * 登録・編集で受け取る値の決まり（Bean Validation の印で使う値と、受け取ったときの空白の除き方）。

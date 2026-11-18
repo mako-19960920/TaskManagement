@@ -1,4 +1,4 @@
-package com.taskmanagement.controller;
+package com.taskmanagement.dto;
 
 /**
  * PUT /api/tasks で受け取るタスク1件。

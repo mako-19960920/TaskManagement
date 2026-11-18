@@ -1,4 +1,4 @@
-package com.taskmanagement.controller;
+package com.taskmanagement.dto;
 
 import jakarta.validation.constraints.NotNull;
 

@@ -1,4 +1,4 @@
-package com.taskmanagement.controller;
+package com.taskmanagement.dto;
 
 /**
  * PUT /api/tasks/{id}/position で受け取る、移動先。

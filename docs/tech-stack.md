@@ -73,9 +73,9 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 
 | 項目 | 採用 |
 | --- | --- |
-| パッケージ | `com.taskmanagement` |
+| パッケージ | `com.taskmanagement`。役割ごとに分け、依存は「controller → service → repository → entity」の一方向にする。API で受け取る・返すデータの形（DTO）は `dto` に置き、controller と service の両方から使う（`dto` はほかのパッケージに依存しない） |
 | API の形式 | JSON（REST）。一覧と仕様は [functional-requirements.md](functional-requirements.md) の「2. API」 |
-| 入力チェック | Bean Validation（`spring-boot-starter-validation`）。受け取るクラス（`TaskCreate`・`TaskUpdate`・`TaskHidden`）の項目に `@NotBlank`・`@Size`・`@Pattern`・`@NotNull` を付け、Controller の `@Valid` で調べる。決まり（上限の数、エラー文）は `controller/TaskInputRules.java` にまとめる。期限の日付が存在するか（2月30日など）は印では調べられないので、`TaskService` で調べる |
+| 入力チェック | Bean Validation（`spring-boot-starter-validation`）。受け取るクラス（`TaskCreate`・`TaskUpdate`・`TaskHidden`）の項目に `@NotBlank`・`@Size`・`@Pattern`・`@NotNull` を付け、Controller の `@Valid` で調べる。決まり（上限の数、エラー文）は `dto/TaskInputRules.java` にまとめる。期限の日付が存在するか（2月30日など）は印では調べられないので、`TaskService` で調べる |
 | テーブル | `tasks`。定義は [database-design.md](database-design.md) |
 
 ## バージョン

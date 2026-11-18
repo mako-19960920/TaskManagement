@@ -18,8 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.taskmanagement.controller.TaskResponse;
-import com.taskmanagement.controller.TaskWrite;
+import com.taskmanagement.dto.TaskResponse;
+import com.taskmanagement.dto.TaskWrite;
 import com.taskmanagement.entity.Task;
 import com.taskmanagement.entity.TaskStatus;
 import com.taskmanagement.repository.TaskRepository;
