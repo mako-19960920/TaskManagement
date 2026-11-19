@@ -29,6 +29,10 @@ dependencies {
 	runtimeOnly("org.flywaydb:flyway-database-postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+	// 本物の PostgreSQL を使うテスト。テストのときだけ、Docker で使い捨ての PostgreSQL を立てる
+	testImplementation("org.springframework.boot:spring-boot-testcontainers")
+	testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+	testImplementation("org.testcontainers:testcontainers-postgresql")
 }
 
 checkstyle {

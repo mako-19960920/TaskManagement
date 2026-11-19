@@ -73,7 +73,8 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 
 | 対象 | ツール | コマンド | 場所 | 確かめていること |
 | --- | --- | --- | --- | --- |
-| API | JUnit、Mockito、MockMvc（`@WebMvcTest`） | `backend` で `gradlew.bat test`（`check` にも含まれる） | `backend/src/test/java/` | API の応答とエラーの形、入力チェック、Service の処理。データベースは使わない |
+| API | JUnit、Mockito、MockMvc（`@WebMvcTest`） | `backend` で `gradlew.bat test`（`check` にも含まれる） | `backend/src/test/java/com/taskmanagement/controller`・`service` | API の応答とエラーの形、入力チェック、Service の処理。データベースは使わない |
+| API と PostgreSQL | Testcontainers（`spring-boot-testcontainers`、`testcontainers-postgresql`）、`@SpringBootTest`、MockMvc | 同上 | `backend/src/test/java/com/taskmanagement/TaskDatabaseIntegrationTest.java` | テストのときだけ Docker で使い捨ての PostgreSQL 17 を立て、Flyway の V1・V2 と初期データ、Hibernate の確かめ（`validate`）、登録・移動・削除のあとの並び、検索（`%` を文字として探す、大文字小文字を区別しない）、CHECK 制約を確かめる。テストごとに変更を取り消す。Docker が無い PC では飛ばす |
 | 画面 | Vitest | `frontend` で `npm test` | `frontend/src/**/*.test.ts` | ボードを組み替える関数（`lib/board.ts`）。ブラウザは使わず、Node.js の上で動かす |
 
 テストと Lint は、GitHub Actions（`.github/workflows/ci.yml`）でも、PR を作ったとき・更新したときと `main` にマージしたときに自動で動く。backend（Java 21、`./gradlew check`）と frontend（Node.js 24、`npm ci` のあと lint・typecheck・test・build）の2つのジョブを同時に動かす。
@@ -117,6 +118,7 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 | JUnit Jupiter | 6.0.3 | テスト |
 | Mockito | 5.23.0 | テスト用の偽物（モック） |
 | AssertJ | 3.27.7 | テストの確認（アサーション） |
+| Testcontainers | 2.0.5 | テストのときだけ、Docker で使い捨ての PostgreSQL を立てる |
 
 ### フロントエンド（`frontend/package.json`）
 
