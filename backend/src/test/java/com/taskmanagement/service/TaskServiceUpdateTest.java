@@ -49,7 +49,8 @@ class TaskServiceUpdateTest {
 		task.setPosition(3);
 		task.setHidden(true);
 		lenient().when(taskRepository.findById(5L)).thenReturn(Optional.of(task));
-		lenient().when(taskRepository.saveAndFlush(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		lenient().when(taskRepository.saveAndFlush(any(Task.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
 	}
 
 	@Test

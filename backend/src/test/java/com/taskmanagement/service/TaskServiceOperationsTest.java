@@ -56,7 +56,8 @@ class TaskServiceOperationsTest {
 				.filter(item -> item.getStatus() == invocation.getArgument(0))
 				.sorted((left, right) -> Integer.compare(left.getPosition(), right.getPosition()))
 				.toList());
-		lenient().when(taskRepository.saveAndFlush(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		lenient().when(taskRepository.saveAndFlush(any(Task.class)))
+				.thenAnswer(invocation -> invocation.getArgument(0));
 	}
 
 	private Task task(long id, String title, TaskStatus status, int position) {

@@ -157,11 +157,15 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 | やること | 場所 | コマンド |
 | --- | --- | --- |
 | バックエンドのテスト | `backend` | `gradlew.bat test` |
-| バックエンドのチェック（テスト・Checkstyle・コンパイラの警告） | `backend` | `gradlew.bat check` |
+| バックエンドのチェック（テスト・Checkstyle・整形・コンパイラの警告） | `backend` | `gradlew.bat check` |
+| バックエンドの整形（Spotless） | `backend` | `gradlew.bat format` |
 | フロントエンドのテスト（Vitest） | `frontend` | `npm test` |
 | フロントエンドの Lint（Oxlint） | `frontend` | `npm run lint` |
+| フロントエンドの整形（Prettier） | `frontend` | `npm run format`（確かめるだけなら `npm run format:check`） |
 | フロントエンドの型チェック | `frontend` | `npm run typecheck` |
 | フロントエンドのビルド（型チェック込み） | `frontend` | `npm run build` |
+
+整形（フォーマッター）は、空白・改行・引用符などの見た目を、コマンド1つで自動でそろえる道具です。コードを書いたら `npm run format` と `gradlew.bat format` で整えてからコミットします。整っていないと、CI の確認で ❌ になります。
 
 Lint は、コードを動かす前に読んで、標準から外れた書き方やバグになりやすい書き方を見つける道具です。指摘が0件の状態を保ちます。使っているルールと、ESLint ではなく Oxlint にした理由は [docs/tech-stack.md](docs/tech-stack.md) の「Lint」にあります。
 
@@ -232,6 +236,7 @@ TaskManagement/
 ├── backend/                … API（Spring Boot）
 │   ├── build.gradle.kts    … 使うライブラリとバージョン、Checkstyle とコンパイラの警告の設定
 │   ├── config/checkstyle/checkstyle.xml … Checkstyle のルール
+│   ├── config/eclipse-formatter.prefs … Java の整形の決まり（Spotless）
 │   ├── db/test-data.sql    … 検索を試すためのテストデータ
 │   └── src/
 │       ├── main/java/com/taskmanagement/
@@ -248,6 +253,7 @@ TaskManagement/
 ├── frontend/               … 画面（React + TypeScript）
 │   ├── package.json        … 使うパッケージとバージョン、npm のコマンド
 │   ├── .oxlintrc.json      … Lint（Oxlint）のルール
+│   ├── .prettierrc.json    … 整形（Prettier）の決まり
 │   ├── vite.config.ts      … ポートと /api の転送の設定
 │   ├── scripts/vitest.mjs  … npm test から Vitest を動かす（Windows のドライブ名の大文字・小文字をそろえる）
 │   └── src/

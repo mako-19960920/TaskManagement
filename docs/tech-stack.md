@@ -17,6 +17,8 @@
 | 開発環境 | バージョン管理 | Git | 2.56.0 |
 | 開発環境 | コードのチェック（画面） | Oxlint | 1.93.0 |
 | 開発環境 | コードのチェック（API） | Checkstyle | 14.4.0 |
+| 開発環境 | コードの整形（画面） | Prettier | 3.10.1 |
+| 開発環境 | コードの整形（API） | Spotless（Eclipse の整形） | 8.11.0 |
 
 - Gradle は `gradlew.bat`（Gradle Wrapper）が 8.14.3 をダウンロードして使うので、どの PC でも同じ版になる
 - Node.js、npm、Docker、Git は PC に入れたものを使う。表の版は、動作を確かめた PC のもの
@@ -69,6 +71,22 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 | `ConfirmDialog.tsx`、`TaskDetail.tsx` の `<dialog>` | `jsx-a11y` のクリックとキーボードのルール | 外側のクリックで閉じる操作は、キーボードでは Esc キーでできる |
 | `TaskCard.tsx` の `<li>` | 同上 | キーボードでは「詳細」ボタンで開ける。実際の画面では dnd-kit が `role="button"` を付ける |
 
+## 整形（フォーマッター）
+
+空白・改行・引用符などの見た目を、自動でそろえる。Lint は「書き方の決まり」、整形は「見た目」を受け持つ。CI では、整形済みかを確かめる（整っていなければ ❌）。
+
+| 対象 | ツール | 整形する | 確かめるだけ | 決まり |
+| --- | --- | --- | --- | --- |
+| 画面 | Prettier | `frontend` で `npm run format` | `npm run format:check` | `frontend/.prettierrc.json`（1行 120 文字、ダブルクォート、セミコロンあり）。改行（CRLF・LF）は Git に任せる（`endOfLine: auto`） |
+| API | Spotless（Eclipse の整形） | `backend` で `gradlew.bat format` | `gradlew.bat spotlessCheck`（`check` にも含まれる） | `backend/config/eclipse-formatter.prefs`（タブでインデント、1行 120 文字） |
+
+Java の整形に、Spring 本体が使う Spring Java Format ではなく Spotless を使う理由は次のとおりである。
+
+- Spring Java Format は Javadoc の改行をつなげ直すので、日本語のコメントの文の途中に空白が入り、`<pre>` の中まで崩れた。「コメントは整形しない」という設定がない
+- Spotless（Eclipse の整形）は、コメントを整形しないように決められる。インデントは Spring 本体と同じくタブにしている
+
+record の項目に付けた印（`@NotBlank` など）は、Eclipse の整形では1行につながってしまうので、`// @formatter:off` と `// @formatter:on` で囲んで、縦に並べたままにしている（`TaskCreate`・`TaskUpdate`・`TaskHidden`）。
+
 ## テスト
 
 | 対象 | ツール | コマンド | 場所 | 確かめていること |
@@ -104,6 +122,7 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 | Spring Boot | 4.1.2 | 4.1.2 | `plugins` |
 | Spring Dependency Management プラグイン | 1.1.7 | 1.1.7 | `plugins` |
 | Checkstyle | 14.4.0 | 14.4.0 | `checkstyle.toolVersion` |
+| Spotless プラグイン | 8.11.0 | 8.11.0 | `plugins` |
 
 次のライブラリは、Spring Boot 4.1.2 がバージョンを決める（自分では書かない）。
 
@@ -133,6 +152,7 @@ Checkstyle は、インデントのタブを禁止しない（Spring 本体と�
 | @dnd-kit/utilities | ^3.2.2 | 3.2.2 | ドラッグ中のずれを CSS にする |
 | typescript | ^7.0.2 | 7.0.2 | 型チェック |
 | vitest | ^5.1.0 | 5.1.0 | テスト（`npm test`） |
+| prettier | ^3.10.1 | 3.10.1 | 整形（`npm run format`） |
 | vite | ^8.3.6 | 8.3.6 | 開発サーバーとビルド |
 | @vitejs/plugin-react | ^6.3.0 | 6.3.0 | Vite で React を扱う |
 | @types/react | ^19.3.0 | 19.3.0 | React の型定義 |

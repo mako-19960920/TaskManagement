@@ -257,7 +257,8 @@ public class TaskService {
 		// 1件でも長すぎるタイトルがあれば、何も変えずに 400 にする（データベースに入れる前に止める）
 		if (inputs != null) {
 			for (TaskWrite input : inputs) {
-				if (input != null && input.title() != null && input.title().strip().length() > TaskInputRules.TITLE_MAX) {
+				if (input != null && input.title() != null
+						&& input.title().strip().length() > TaskInputRules.TITLE_MAX) {
 					throw new InvalidTaskException("title", TaskInputRules.TITLE_MAX + " 文字までです");
 				}
 			}

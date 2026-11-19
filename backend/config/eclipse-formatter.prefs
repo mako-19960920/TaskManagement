@@ -1,0 +1,38 @@
+# Java のコードの整形の決まり（Spotless が Eclipse の整形で使う。gradlew format で整形する）。
+# 今のコードの書き方（Spring 本体と同じく、タブでインデント）に合わせる。
+# 日本語のコメントの改行を崩さないように、コメントは整形しない。
+
+# インデントはタブ（幅は4）
+org.eclipse.jdt.core.formatter.tabulation.char=tab
+org.eclipse.jdt.core.formatter.tabulation.size=4
+org.eclipse.jdt.core.formatter.indentation.size=4
+
+# 1行は 120 文字まで。続きの行は、タブ2つ分下げる
+org.eclipse.jdt.core.formatter.lineSplit=120
+org.eclipse.jdt.core.formatter.continuation_indentation=2
+org.eclipse.jdt.core.formatter.continuation_indentation_for_array_initializer=2
+
+# 自分で入れた改行（メソッドのつなぎなど）はつなげない
+org.eclipse.jdt.core.formatter.join_wrapped_lines=false
+
+# catch と finally は、前の } のあとで改行する（Spring 本体と同じ）
+org.eclipse.jdt.core.formatter.insert_new_line_before_catch_in_try_statement=insert
+org.eclipse.jdt.core.formatter.insert_new_line_before_finally_in_try_statement=insert
+
+# クラスの { のすぐあとに、空行を1つ入れる
+org.eclipse.jdt.core.formatter.blank_lines_before_first_class_body_declaration=1
+org.eclipse.jdt.core.formatter.number_of_empty_lines_to_preserve=1
+
+# コメント（Javadoc、/* */、//）は整形しない
+org.eclipse.jdt.core.formatter.comment.format_javadoc_comments=false
+org.eclipse.jdt.core.formatter.comment.format_block_comments=false
+org.eclipse.jdt.core.formatter.comment.format_line_comments=false
+org.eclipse.jdt.core.formatter.comment.format_header=false
+
+# 「// @formatter:off」から「// @formatter:on」までは整形しない（どうしても形を残したい所に使う）
+org.eclipse.jdt.core.formatter.use_on_off_tags=true
+
+# 引数や record の項目に付けた印（@NotBlank など）のあとで改行する（印と項目を縦に並べる）
+org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_parameter=insert
+# enum の値は、1つずつ改行して縦に並べる
+org.eclipse.jdt.core.formatter.alignment_for_enum_constants=49

@@ -176,7 +176,12 @@ function task(id: number, status: string, position: number): TaskResponse {
 
 describe("columnsFromTasks・cardFromTask（API のタスクを画面のカードにする）", () => {
   it("状態で3列に分け、列の中は position の順に並べる", () => {
-    const board = columnsFromTasks([task(1, "done", 0), task(2, "todo", 1), task(3, "todo", 0), task(4, "in_progress", 0)]);
+    const board = columnsFromTasks([
+      task(1, "done", 0),
+      task(2, "todo", 1),
+      task(3, "todo", 0),
+      task(4, "in_progress", 0),
+    ]);
     expect(keys(board)).toEqual({ todo: ["3", "2"], doing: ["4"], done: ["1"] });
   });
 

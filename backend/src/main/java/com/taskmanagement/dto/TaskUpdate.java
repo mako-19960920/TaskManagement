@@ -10,6 +10,8 @@ import jakarta.validation.constraints.Size;
  * 状態・順番・非表示は、ここでは変えない。
  * 値のチェックは、項目に付けた印（Bean Validation）で行う。期限の日付が存在するかは、Service で確かめる。
  */
+// 印（@NotBlank など）と項目を縦に並べたままにするため、ここは整形しない
+// @formatter:off
 public record TaskUpdate(
 		@NotBlank(message = TaskInputRules.TITLE_REQUIRED)
 		@Size(max = TaskInputRules.TITLE_MAX, message = TaskInputRules.TITLE_TOO_LONG)
@@ -18,6 +20,7 @@ public record TaskUpdate(
 		@Pattern(regexp = TaskInputRules.PRIORITY_VALUES, message = TaskInputRules.PRIORITY_INVALID)
 		String priority,
 		String dueDate) {
+	// @formatter:on
 
 	/** 受け取ったときに前後の空白を除く（印のチェックは、除いたあとの値に対して行われる）。空の説明・優先度・期限は省略と同じにする */
 	public TaskUpdate {

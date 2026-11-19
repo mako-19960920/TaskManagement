@@ -37,7 +37,7 @@ jobs:
       - name: Gradle を用意する（ダウンロードした部品を次の実行でも使い回す）
         uses: gradle/actions/setup-gradle@v6
 
-      - name: テスト・Checkstyle・コンパイラの警告
+      - name: テスト・Checkstyle・整形・コンパイラの警告
         run: ./gradlew check
 
   frontend:
@@ -59,6 +59,9 @@ jobs:
 
       - name: 部品を入れる（package-lock.json のとおりに）
         run: npm ci
+
+      - name: 整形されているか（Prettier）
+        run: npm run format:check
 
       - name: Lint（Oxlint）
         run: npm run lint
