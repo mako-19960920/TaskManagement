@@ -26,7 +26,7 @@ export type Card = {
 // 3列ぶんのカード
 export type Board = Record<ColumnId, Card[]>;
 
-// API が返すタスク（GET /api/tasks など）。PUT で送るときにも使う
+// API が返すタスク（GET /api/tasks など）
 export type TaskResponse = {
   id: number | null;
   title: string;
@@ -38,7 +38,6 @@ export type TaskResponse = {
   hidden?: boolean;
   createdAt?: string;
   updatedAt?: string;
-  key?: string;
 };
 
 // PUT /api/tasks/{id} で送る、編集後のタスク（title だけ必須）

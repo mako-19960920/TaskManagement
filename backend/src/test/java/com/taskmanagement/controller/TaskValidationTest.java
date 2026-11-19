@@ -133,6 +133,6 @@ class TaskValidationTest {
 
 	private static TaskResponse sample(String title) {
 		LocalDateTime now = LocalDateTime.of(2026, 11, 17, 12, 0);
-		return new TaskResponse(1L, title, null, "medium", null, "todo", 0, false, now, now, null);
+		return new TaskResponse(1L, title, null, "medium", null, "todo", 0, false, now, now);
 	}
 }

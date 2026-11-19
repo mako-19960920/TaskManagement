@@ -126,8 +126,7 @@ class TaskControllerTest {
 				.andExpect(status().isCreated())
 				.andExpect(header().string("Location", "http://localhost/api/tasks/7"))
 				.andExpect(jsonPath("$.id").value(7))
-				.andExpect(jsonPath("$.status").value("todo"))
-				.andExpect(jsonPath("$.key").doesNotExist());
+				.andExpect(jsonPath("$.status").value("todo"));
 	}
 
 	@Test
@@ -259,6 +258,6 @@ class TaskControllerTest {
 
 	private TaskResponse sample(Long id, String title, String status) {
 		LocalDateTime now = LocalDateTime.of(2026, 11, 2, 12, 0);
-		return new TaskResponse(id, title, null, "medium", null, status, 0, false, now, now, null);
+		return new TaskResponse(id, title, null, "medium", null, status, 0, false, now, now);
 	}
 }

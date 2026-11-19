@@ -4,7 +4,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,7 +16,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.taskmanagement.dto.TaskCreate;
-import com.taskmanagement.dto.TaskUpdate;
 import com.taskmanagement.service.InvalidSearchConditionException;
 import com.taskmanagement.service.InvalidTaskException;
 import com.taskmanagement.service.InvalidTaskStatusException;
@@ -34,38 +32,23 @@ class ApiErrorResponseTest {
 	@MockitoBean
 	private TaskService taskService;
 
+	// Service が出す入力のエラー（今は、存在しない期限の日付のときだけ）。
+	// 理由が英字で始まるときは、読みやすいように「は」のあとに空白を入れる（「期限は YYYY-MM-DD の形です」）
 	@Test
 	void invalidTaskReturnsReasonAndField() throws Exception {
-		when(taskService.create(any(TaskCreate.class))).thenThrow(new InvalidTaskException("title", "必須です"));
+		when(taskService.create(any(TaskCreate.class)))
+				.thenThrow(new InvalidTaskException("dueDate", "YYYY-MM-DD の形です"));
 
-		mockMvc.perform(post("/api/tasks").contentType(MediaType.APPLICATION_JSON).content("{ \"title\": \"\" }"))
+		mockMvc
+				.perform(post("/api/tasks").contentType(MediaType.APPLICATION_JSON)
+						.content("{ \"title\": \"メモ\", \"dueDate\": \"2026-02-30\" }"))
 				.andExpect(status().isBadRequest())
 				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
 				.andExpect(jsonPath("$.status").value(400))
 				.andExpect(jsonPath("$.title").value("入力した値が正しくありません"))
-				.andExpect(jsonPath("$.detail").value("タイトルは必須です"))
-				.andExpect(jsonPath("$.field").value("title"))
-				.andExpect(jsonPath("$.instance").value("/api/tasks"));
-	}
-
-	@Test
-	void titleTooLongSaysLimit() throws Exception {
-		when(taskService.update(any(Long.class), any(TaskUpdate.class)))
-				.thenThrow(new InvalidTaskException("title", "255 文字までです"));
-
-		mockMvc.perform(put("/api/tasks/5").contentType(MediaType.APPLICATION_JSON).content("{ \"title\": \"x\" }"))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.detail").value("タイトルは 255 文字までです"));
-	}
-
-	@Test
-	void reasonStartingWithLettersHasSpace() throws Exception {
-		when(taskService.create(any(TaskCreate.class)))
-				.thenThrow(new InvalidTaskException("dueDate", "YYYY-MM-DD の形です"));
-
-		mockMvc.perform(post("/api/tasks").contentType(MediaType.APPLICATION_JSON).content("{ \"title\": \"x\" }"))
 				.andExpect(jsonPath("$.detail").value("期限は YYYY-MM-DD の形です"))
-				.andExpect(jsonPath("$.field").value("dueDate"));
+				.andExpect(jsonPath("$.field").value("dueDate"))
+				.andExpect(jsonPath("$.instance").value("/api/tasks"));
 	}
 
 	@Test

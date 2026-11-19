@@ -3,8 +3,7 @@ package com.taskmanagement.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
+/** API が返すタスク1件（GET・POST・PUT の応答） */
 public record TaskResponse(
 		Long id,
 		String title,
@@ -15,6 +14,5 @@ public record TaskResponse(
 		int position,
 		boolean hidden,
 		LocalDateTime createdAt,
-		LocalDateTime updatedAt,
-		@JsonInclude(JsonInclude.Include.NON_NULL) String key) {
+		LocalDateTime updatedAt) {
 }
