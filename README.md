@@ -167,7 +167,7 @@ Lint は、コードを動かす前に読んで、標準から外れた書き方
 
 PR を作ったとき・更新したときと、`main` にマージしたときは、GitHub Actions（`.github/workflows/ci.yml`）が上のチェックを自動で動かし、結果を PR に ✅ / ❌ で出します。❌ のときは、PR の「Checks」タブで、どの手順で失敗したかを見られます。
 
-バックエンドのテストは、データベースを使わずに動きます（Controller は `@WebMvcTest`、Service は Mockito）。フロントエンドのテストは、ボードを組み替える関数（`src/lib/board.ts`）を、ブラウザを使わずに確かめます（`src/lib/board.test.ts`）。ビルドの結果は `frontend/dist/` にできます（Git では管理しません）。
+バックエンドのテストは、ほとんどがデータベースを使わずに動きます（Controller は `@WebMvcTest`、Service は Mockito）。`TaskDatabaseIntegrationTest` だけは、Testcontainers で使い捨ての PostgreSQL 17 を Docker で立て、Flyway の SQL・初期データ・移動や削除のあとの並び・検索・CHECK 制約を、本物のデータベースで確かめます。開発用のデータベース（5433）には触りません。Docker Desktop が動いていないときは、このテストだけ飛ばします（CI では必ず動きます）。フロントエンドのテストは、ボードを組み替える関数（`src/lib/board.ts`）を、ブラウザを使わずに確かめます（`src/lib/board.test.ts`）。ビルドの結果は `frontend/dist/` にできます（Git では管理しません）。
 
 ## API
 
