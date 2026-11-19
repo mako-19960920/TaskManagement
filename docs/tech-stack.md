@@ -183,3 +183,5 @@ record の項目に付けた印（`@NotBlank` など）は、Eclipse の整形�
 | Git | 2.56.0 | バージョン管理 |
 
 バージョンを上げたときは、この表も一緒に直す。
+
+新しい版が出ると、Dependabot（`.github/dependabot.yml`）が毎週月曜の朝 9 時に、更新の PR を作る（npm・Gradle・GitHub Actions）。小さな更新（minor・patch）は1つの PR にまとめ、大きな更新（major）は1つずつ別の PR にする。取り込むときは、CI が ✅ になるのを確かめ、同じブランチでこの表も直してからマージする。

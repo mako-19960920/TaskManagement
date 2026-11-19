@@ -230,6 +230,7 @@ JSON の形は [docs/functional-requirements.md](docs/functional-requirements.md
 TaskManagement/
 ├── README.md               … このファイル
 ├── .github/workflows/ci.yml … 自動チェック（CI）の設定
+├── .github/dependabot.yml … 依存パッケージの更新のお知らせ（Dependabot）の設定
 ├── docker-compose.yml      … PostgreSQL の起動設定
 ├── docs/                   … 設計書（要件、機能、画面、テーブル、技術）
 ├── scripts/
@@ -323,3 +324,4 @@ TaskManagement/
 - プルリクエストの本文に `Closes #イシュー番号` を書いて、マージする
 - `main` には保護のルールがある。プルリクエストを通さないとマージできず、CI（GitHub Actions）の2つのチェック（`backend（テスト・Checkstyle）` と `frontend（Lint・型・テスト・ビルド）`）が ✅ になるまでマージできない。管理者も同じ
 - 依存パッケージのバージョンを上げたときは、[docs/tech-stack.md](docs/tech-stack.md) の表も直す
+- 依存パッケージに新しい版が出ると、Dependabot（`.github/dependabot.yml`）が毎週月曜の朝に更新の PR を作る。CI が ✅ になるのを確かめ、同じブランチで [docs/tech-stack.md](docs/tech-stack.md) の表も直してからマージする
