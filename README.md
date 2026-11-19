@@ -310,4 +310,5 @@ TaskManagement/
 
 - 作業ごとに GitHub でイシューを作り、`<イシュー番号>-<内容>` のブランチで作業する（`main` へ直接コミットしない）
 - プルリクエストの本文に `Closes #イシュー番号` を書いて、マージする
+- `main` には保護のルールがある。プルリクエストを通さないとマージできず、CI（GitHub Actions）の2つのチェック（`backend（テスト・Checkstyle）` と `frontend（Lint・型・テスト・ビルド）`）が ✅ になるまでマージできない。管理者も同じ
 - 依存パッケージのバージョンを上げたときは、[docs/tech-stack.md](docs/tech-stack.md) の表も直す
