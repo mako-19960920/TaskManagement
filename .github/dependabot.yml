@@ -1,0 +1,43 @@
+# 依存パッケージの更新のお知らせ（Dependabot）。
+# 使っている部品に新しい版が出ると、GitHub が更新の PR を自動で作る。PR は CI（backend・frontend・e2e）を通ってからマージする。
+# 週に1回（月曜の朝）だけ調べ、小さな更新（minor・patch）は1つの PR にまとめる。大きな更新（major）は1つずつ別の PR になる。
+# 取り込むときは、docs/tech-stack.md のバージョンの表も直す。
+version: 2
+updates:
+  # 画面（frontend/package.json）
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    groups:
+      frontend-minor-and-patch:
+        update-types: [minor, patch]
+
+  # API（backend/build.gradle.kts）
+  - package-ecosystem: gradle
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    groups:
+      backend-minor-and-patch:
+        update-types: [minor, patch]
+
+  # CI の部品（.github/workflows/ci.yml の actions/checkout など）
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Tokyo
+    groups:
+      github-actions:
+        update-types: [minor, patch, major]
