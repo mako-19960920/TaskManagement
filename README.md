@@ -160,6 +160,7 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 | バックエンドのチェック（テスト・Checkstyle・整形・コンパイラの警告） | `backend` | `gradlew.bat check` |
 | バックエンドの整形（Spotless） | `backend` | `gradlew.bat format` |
 | フロントエンドのテスト（Vitest） | `frontend` | `npm test` |
+| 画面の E2E テスト（Playwright） | `TaskManagement` | `powershell -ExecutionPolicy Bypass -File scriptse2e.ps1` |
 | フロントエンドの Lint（Oxlint） | `frontend` | `npm run lint` |
 | フロントエンドの整形（Prettier） | `frontend` | `npm run format`（確かめるだけなら `npm run format:check`） |
 | フロントエンドの型チェック | `frontend` | `npm run typecheck` |
@@ -167,9 +168,11 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 
 整形（フォーマッター）は、空白・改行・引用符などの見た目を、コマンド1つで自動でそろえる道具です。コードを書いたら `npm run format` と `gradlew.bat format` で整えてからコミットします。整っていないと、CI の確認で ❌ になります。
 
+E2E テストは、本物のブラウザ（Edge）で画面を操作し、追加・移動ボタン・ドラッグ・詳細と編集・非表示・削除・検索・2つのタブを確かめます（`frontend/e2e/`）。`scriptse2e.ps1` は、E2E 用のデータベース（`taskboard_e2e`）を作り直し、そこにつないでサーバーを起動してからテストを動かし、最後にいつものデータベースで起動し直します。いつものデータは書き換えません（間違っていつものデータベースにつないだまま動かしても、テストの前に止まります）。失敗したときは、`frontend` で `npx playwright show-report` を打つと、画面の写真と操作の記録を見られます。
+
 Lint は、コードを動かす前に読んで、標準から外れた書き方やバグになりやすい書き方を見つける道具です。指摘が0件の状態を保ちます。使っているルールと、ESLint ではなく Oxlint にした理由は [docs/tech-stack.md](docs/tech-stack.md) の「Lint」にあります。
 
-PR を作ったとき・更新したときと、`main` にマージしたときは、GitHub Actions（`.github/workflows/ci.yml`）が上のチェックを自動で動かし、結果を PR に ✅ / ❌ で出します。❌ のときは、PR の「Checks」タブで、どの手順で失敗したかを見られます。
+PR を作ったとき・更新したときと、`main` にマージしたときは、GitHub Actions（`.github/workflows/ci.yml`）が上のチェック（E2E テストも含む）を自動で動かし、結果を PR に ✅ / ❌ で出します。❌ のときは、PR の「Checks」タブで、どの手順で失敗したかを見られます。
 
 バックエンドのテストは、ほとんどがデータベースを使わずに動きます（Controller は `@WebMvcTest`、Service は Mockito）。`TaskDatabaseIntegrationTest` だけは、Testcontainers で使い捨ての PostgreSQL 17 を Docker で立て、Flyway の SQL・初期データ・移動や削除のあとの並び・検索・CHECK 制約を、本物のデータベースで確かめます。開発用のデータベース（5433）には触りません。Docker Desktop が動いていないときは、このテストだけ飛ばします（CI では必ず動きます）。フロントエンドのテストは、ボードを組み替える関数（`src/lib/board.ts`）を、ブラウザを使わずに確かめます（`src/lib/board.test.ts`）。ビルドの結果は `frontend/dist/` にできます（Git では管理しません）。
 
@@ -231,7 +234,8 @@ TaskManagement/
 ├── docker-compose.yml      … PostgreSQL の起動設定
 ├── docs/                   … 設計書（要件、機能、画面、テーブル、技術）
 ├── scripts/
-│   └── start-servers.ps1   … DB・API・画面をまとめて起動する
+│   ├── start-servers.ps1   … DB・API・画面をまとめて起動する
+│   └── e2e.ps1             … E2E 用のデータベースで、画面の E2E テストを動かす
 ├── logs/                   … 起動のログ（Git では管理しない）
 ├── backend/                … API（Spring Boot）
 │   ├── build.gradle.kts    … 使うライブラリとバージョン、Checkstyle とコンパイラの警告の設定
@@ -256,6 +260,8 @@ TaskManagement/
 │   ├── .prettierrc.json    … 整形（Prettier）の決まり
 │   ├── vite.config.ts      … ポートと /api の転送の設定
 │   ├── scripts/vitest.mjs  … npm test から Vitest を動かす（Windows のドライブ名の大文字・小文字をそろえる）
+│   ├── playwright.config.ts … E2E テスト（Playwright）の設定
+│   ├── e2e/                … E2E テスト（*.e2e.ts）
 │   └── src/
 │       ├── main.tsx         … 画面の入口
 │       ├── App.tsx          … 画面全体。部品と hooks を組み合わせ、検索中の移動をまとめる

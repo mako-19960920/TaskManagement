@@ -7,3 +7,8 @@ dist
 
 # TypeScript の差分ビルド用ファイル
 *.tsbuildinfo
+
+# E2E テスト（Playwright）の結果
+/test-results/
+/playwright-report/
+/blob-report/
