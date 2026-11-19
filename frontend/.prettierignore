@@ -1,0 +1,4 @@
+# 整形しないもの（作られるファイルと部品）
+dist
+node_modules
+package-lock.json

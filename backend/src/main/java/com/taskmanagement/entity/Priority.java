@@ -1,6 +1,7 @@
 package com.taskmanagement.entity;
 
 public enum Priority {
+
 	HIGH("high"),
 	MEDIUM("medium"),
 	LOW("low");

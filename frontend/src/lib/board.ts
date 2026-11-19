@@ -195,9 +195,7 @@ export function findCard(board: Board, key: string): Card | null {
 // 検索結果のカードと同じカードを、ボードの中から探して key を返す（保存済みなら id で探す）
 export function findBoardKey(board: Board, target: Card): string | null {
   for (const id of columnIds) {
-    const found = board[id].find((card) =>
-      target.id != null ? card.id === target.id : card.key === target.key
-    );
+    const found = board[id].find((card) => (target.id != null ? card.id === target.id : card.key === target.key));
     if (found) {
       return found.key;
     }

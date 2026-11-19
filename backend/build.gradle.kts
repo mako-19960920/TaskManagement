@@ -7,6 +7,8 @@ plugins {
 	checkstyle
 	id("org.springframework.boot") version "4.1.2"
 	id("io.spring.dependency-management") version "1.1.7"
+	// コードの整形。gradlew format で整形し、check のときに整形済みかを確かめる（決まりは config/eclipse-formatter.prefs）
+	id("com.diffplug.spotless") version "8.11.0"
 }
 
 group = "com.taskmanagement"
@@ -36,6 +38,22 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 	testImplementation("org.testcontainers:testcontainers-postgresql")
+}
+
+spotless {
+	java {
+		target("src/**/*.java")
+		eclipse().configFile("config/eclipse-formatter.prefs")
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+}
+
+// 「gradlew format」で整形する（spotlessApply の短い名前）
+tasks.register("format") {
+	group = "formatting"
+	description = "Java のコードを整形する（config/eclipse-formatter.prefs の決まりで）"
+	dependsOn("spotlessApply")
 }
 
 checkstyle {

@@ -195,7 +195,11 @@ export function useCardDrag(cards: Board, onDrop: DropHandler) {
     if (isColumnId(overId)) {
       list = placeInColumn(list, to, list[oldIndex], active, over);
     } else if (overId !== key) {
-      list = arrayMove(list, oldIndex, list.findIndex((card) => card.key === overId));
+      list = arrayMove(
+        list,
+        oldIndex,
+        list.findIndex((card) => card.key === overId)
+      );
     }
     const position = list.findIndex((card) => card.key === key);
     onDrop(key, to, list[position + 1]?.key ?? null);
@@ -211,11 +215,15 @@ export function useCardDrag(cards: Board, onDrop: DropHandler) {
     onDragStart: ({ active }) => `「${cardText(active.id)}」をつかみました。`,
     onDragOver: ({ active, over }) => {
       const title = columnTitle(over);
-      return title ? `「${cardText(active.id)}」は「${title}」の上にあります。` : `「${cardText(active.id)}」は列の外にあります。`;
+      return title
+        ? `「${cardText(active.id)}」は「${title}」の上にあります。`
+        : `「${cardText(active.id)}」は列の外にあります。`;
     },
     onDragEnd: ({ active, over }) => {
       const title = columnTitle(over);
-      return title ? `「${cardText(active.id)}」を「${title}」に置きました。` : `「${cardText(active.id)}」を元の位置に戻しました。`;
+      return title
+        ? `「${cardText(active.id)}」を「${title}」に置きました。`
+        : `「${cardText(active.id)}」を元の位置に戻しました。`;
     },
     onDragCancel: ({ active }) => `「${cardText(active.id)}」の移動をやめました。`,
   };

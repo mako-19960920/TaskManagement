@@ -207,7 +207,8 @@ class TaskDatabaseIntegrationTest {
 
 	private List<Integer> positions(String status) {
 		flush();
-		return jdbc.queryForList("SELECT position FROM tasks WHERE status = ? ORDER BY position", Integer.class, status);
+		return jdbc.queryForList("SELECT position FROM tasks WHERE status = ? ORDER BY position", Integer.class,
+				status);
 	}
 
 	/** API（Hibernate）がまだ書き込んでいない変更を、データベースに書き込む（SQL で直接読む前に呼ぶ） */
