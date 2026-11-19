@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
 	java
 	// Java の書き方のチェック（設定は config/checkstyle/checkstyle.xml）
@@ -49,4 +52,20 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	// 飛ばしたテストと失敗したテストは、名前をログに出す（失敗したときは理由も全部出す）
+	testLogging {
+		events(TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+		exceptionFormat = TestExceptionFormat.FULL
+	}
+	// 最後に、何件動いて、何件成功・失敗し、何件飛ばしたかを出す（CI のログで、本物の DB のテストが飛ばされていないかを見るため）
+	addTestListener(object : TestListener {
+		override fun beforeSuite(suite: TestDescriptor) {}
+		override fun beforeTest(testDescriptor: TestDescriptor) {}
+		override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {}
+		override fun afterSuite(suite: TestDescriptor, result: TestResult) {
+			if (suite.parent == null) {
+				println("テストの結果：${result.testCount} 件（成功 ${result.successfulTestCount}、失敗 ${result.failedTestCount}、飛ばした ${result.skippedTestCount}）")
+			}
+		}
+	})
 }
