@@ -9,7 +9,7 @@
 | バックエンド | ビルドツール | Gradle（Gradle Wrapper） | 8.14.3 |
 | フロントエンド | 言語 | TypeScript | 7.0.2 |
 | フロントエンド | UI ライブラリ | React | 19.3.1 |
-| フロントエンド | ビルドツール・開発サーバー | Vite | 8.3.6 |
+| フロントエンド | ビルドツール・開発サーバー | Vite | 8.3.8 |
 | フロントエンド | 実行環境 | Node.js | 24.20.0 |
 | フロントエンド | パッケージ管理 | npm | 11.19.0 |
 | データベース | DBMS | PostgreSQL（Docker、ホストの 5433） | 17（17.11） |
@@ -156,7 +156,7 @@ record の項目に付けた印（`@NotBlank` など）は、Eclipse の整形�
 | prettier | ^3.10.1 | 3.10.1 | 整形（`npm run format`） |
 | @playwright/test | ^1.65.1 | 1.65.1 | E2E テスト |
 | @types/node | ^24.19.2 | 24.19.2 | E2E テストの設定で Node.js の型を使う |
-| vite | ^8.3.6 | 8.3.6 | 開発サーバーとビルド |
+| vite | ^8.3.8 | 8.3.8 | 開発サーバーとビルド |
 | @vitejs/plugin-react | ^6.3.0 | 6.3.0 | Vite で React を扱う |
 | @types/react | ^19.3.0 | 19.3.0 | React の型定義 |
 | @types/react-dom | ^19.3.0 | 19.3.0 | React DOM の型定義 |
