@@ -1,5 +1,5 @@
 # 自動チェック（CI）。PR を作ったとき・更新したときと、main にマージしたときに動く。
-# backend と frontend の2つのジョブを同時に動かし、結果を PR に ✅ / ❌ で出す。
+# backend・frontend・e2e の3つのジョブを同時に動かし、結果を PR に ✅ / ❌ で出す。
 name: CI
 
 on:
@@ -74,3 +74,86 @@ jobs:
 
       - name: ビルド
         run: npm run build
+
+  e2e:
+    name: e2e（画面の操作）
+    runs-on: ubuntu-latest
+    # 毎回まっさらな PostgreSQL 17 を、開発と同じ 5433 で立てる（初期データ6件だけの状態から始まる）
+    services:
+      db:
+        image: postgres:17
+        env:
+          POSTGRES_DB: taskboard
+          POSTGRES_USER: taskboard
+          POSTGRES_PASSWORD: taskboard
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U taskboard -d taskboard"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: コードを取ってくる
+        uses: actions/checkout@v7
+
+      - name: Java 21 を用意する
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Gradle を用意する
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Node.js 24 を用意する
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: API を裏で起動する（8080）
+        working-directory: backend
+        run: nohup ./gradlew bootRun > ../backend.log 2>&1 &
+
+      - name: 部品を入れる（package-lock.json のとおりに）
+        working-directory: frontend
+        run: npm ci
+
+      - name: ブラウザ（Chromium）を入れる
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: 画面を裏で起動する（5173）
+        working-directory: frontend
+        run: nohup npm run dev > ../frontend.log 2>&1 &
+
+      - name: API と画面が起動するのを待つ
+        run: |
+          for i in $(seq 1 90); do
+            if curl -sf http://localhost:8080/api/tasks > /dev/null && curl -sf http://localhost:5173/ > /dev/null; then
+              echo "起動しました"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "起動できませんでした"
+          tail -n 60 backend.log frontend.log
+          exit 1
+
+      - name: E2E テスト（Playwright）
+        working-directory: frontend
+        run: npx playwright test
+
+      - name: 失敗したときは、サーバーのログを出す
+        if: failure()
+        run: tail -n 100 backend.log frontend.log
+
+      - name: 失敗したときは、結果の記録（画面の写真と操作の記録）を残す
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 7

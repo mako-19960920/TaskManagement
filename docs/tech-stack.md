@@ -94,8 +94,9 @@ record の項目に付けた印（`@NotBlank` など）は、Eclipse の整形�
 | API | JUnit、Mockito、MockMvc（`@WebMvcTest`） | `backend` で `gradlew.bat test`（`check` にも含まれる） | `backend/src/test/java/com/taskmanagement/controller`・`service` | API の応答とエラーの形、入力チェック、Service の処理。データベースは使わない |
 | API と PostgreSQL | Testcontainers（`spring-boot-testcontainers`、`testcontainers-postgresql`）、`@SpringBootTest`、MockMvc | 同上 | `backend/src/test/java/com/taskmanagement/TaskDatabaseIntegrationTest.java` | テストのときだけ Docker で使い捨ての PostgreSQL 17 を立て、Flyway の V1・V2 と初期データ、Hibernate の確かめ（`validate`）、登録・移動・削除のあとの並び、検索（`%` を文字として探す、大文字小文字を区別しない）、CHECK 制約を確かめる。テストごとに変更を取り消す。Docker が無い PC では飛ばす |
 | 画面 | Vitest | `frontend` で `npm test` | `frontend/src/**/*.test.ts` | ボードを組み替える関数（`lib/board.ts`）。ブラウザは使わず、Node.js の上で動かす |
+| 画面・API・DB のつながり（E2E） | Playwright（`@playwright/test`） | `TaskManagement` で `scriptse2e.ps1` | `frontend/e2e/*.e2e.ts` | 本物のブラウザで、追加・移動ボタン・ドラッグ・詳細と編集・非表示・削除・検索・2つのタブを操作する。手元では Edge、CI では Chromium。E2E 用のデータベース（`taskboard_e2e`）を作り直して使い、いつものデータは書き換えない |
 
-テストと Lint は、GitHub Actions（`.github/workflows/ci.yml`）でも、PR を作ったとき・更新したときと `main` にマージしたときに自動で動く。backend（Java 21、`./gradlew check`）と frontend（Node.js 24、`npm ci` のあと lint・typecheck・test・build）の2つのジョブを同時に動かす。
+テストと Lint は、GitHub Actions（`.github/workflows/ci.yml`）でも、PR を作ったとき・更新したときと `main` にマージしたときに自動で動く。backend（Java 21、`./gradlew check`）、frontend（Node.js 24、`npm ci` のあと format:check・lint・typecheck・test・build）、e2e（PostgreSQL 17 をサービスとして 5433 で立て、API と画面を起動して Playwright を動かす。失敗したときは結果の記録を7日間残す）の3つのジョブを同時に動かす。
 
 画面のテストは、Vitest を直接ではなく `frontend/scripts/vitest.mjs` から動かす。Windows では、ターミナルの今のフォルダのドライブ名が小文字（`c:...`、VS Code のターミナルで起きやすい）のことがあり、そのまま動かすと、Vitest の本体とテストのファイルが別々の書き方（`c:` と `C:`）で読み込まれて、「Vitest failed to find the current suite」のエラーでテストが1件も動かない。このスクリプトは、ドライブ名を大文字にそろえてから Vitest を動かす。
 
@@ -153,6 +154,8 @@ record の項目に付けた印（`@NotBlank` など）は、Eclipse の整形�
 | typescript | ^7.0.2 | 7.0.2 | 型チェック |
 | vitest | ^5.1.0 | 5.1.0 | テスト（`npm test`） |
 | prettier | ^3.10.1 | 3.10.1 | 整形（`npm run format`） |
+| @playwright/test | ^1.65.1 | 1.65.1 | E2E テスト |
+| @types/node | ^24.19.2 | 24.19.2 | E2E テストの設定で Node.js の型を使う |
 | vite | ^8.3.6 | 8.3.6 | 開発サーバーとビルド |
 | @vitejs/plugin-react | ^6.3.0 | 6.3.0 | Vite で React を扱う |
 | @types/react | ^19.3.0 | 19.3.0 | React の型定義 |
