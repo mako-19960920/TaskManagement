@@ -75,7 +75,6 @@ class TaskServiceCreateTest {
 		assertThat(response.hidden()).isFalse();
 		assertThat(response.id()).isEqualTo(10L);
 		assertThat(response.status()).isEqualTo("todo");
-		assertThat(response.key()).isNull();
 	}
 
 	@Test

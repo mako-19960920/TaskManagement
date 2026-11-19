@@ -116,3 +116,16 @@ docker compose exec -T db psql -U taskboard -d taskboard < backend/db/test-data.
 | `DB_URL` | 接続先の URL | `jdbc:postgresql://localhost:5433/taskboard` |
 | `DB_USERNAME` | ユーザー | `taskboard` |
 | `DB_PASSWORD` | パスワード | `taskboard` |
+
+## 5. データの退避と戻し方
+
+データをまとめて退避したり、戻したりするときは、PostgreSQL に付いている道具を使う（API にまとめて置き換える入口は無い）。`TaskManagement` フォルダで次のように打つ。
+
+| やること | コマンド |
+| --- | --- |
+| 退避する（テーブルの形とデータを SQL のファイルに書き出す） | `docker compose exec -T db pg_dump -U taskboard -d taskboard --clean --if-exists > backup.sql` |
+| 戻す（退避したときの状態に入れ直す） | `docker compose exec -T db psql -U taskboard -d taskboard < backup.sql` |
+
+- `--clean --if-exists` を付けて退避すると、戻すときに今のテーブルを消してから作り直すので、退避したときと同じ状態に戻る。Flyway の記録（`flyway_schema_history`）も一緒に戻る
+- 戻す前に API を止めておく（使っている途中のデータが混ざらないようにする）
+- 退避したファイルには、すべてのデータが入っている。Git には入れない

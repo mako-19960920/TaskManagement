@@ -4,11 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -18,11 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.taskmanagement.dto.TaskCreate;
 import com.taskmanagement.dto.TaskDueDate;
 import com.taskmanagement.dto.TaskHidden;
-import com.taskmanagement.dto.TaskInputRules;
 import com.taskmanagement.dto.TaskMove;
 import com.taskmanagement.dto.TaskResponse;
 import com.taskmanagement.dto.TaskUpdate;
-import com.taskmanagement.dto.TaskWrite;
 import com.taskmanagement.entity.Priority;
 import com.taskmanagement.entity.Task;
 import com.taskmanagement.entity.TaskStatus;
@@ -54,7 +48,7 @@ public class TaskService {
 	public List<TaskResponse> findAll() {
 		return taskRepository.findAll().stream()
 				.sorted(BOARD_ORDER)
-				.map(task -> toResponse(task, null))
+				.map(task -> toResponse(task))
 				.toList();
 	}
 
@@ -77,7 +71,7 @@ public class TaskService {
 				TaskSpecifications.dueTo(to));
 		return taskRepository.findAll(spec).stream()
 				.sorted(BOARD_ORDER)
-				.map(task -> toResponse(task, null))
+				.map(task -> toResponse(task))
 				.toList();
 	}
 
@@ -111,14 +105,14 @@ public class TaskService {
 	@Transactional(readOnly = true)
 	public TaskResponse findById(long id) {
 		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
-		return toResponse(task, null);
+		return toResponse(task);
 	}
 
 	@Transactional(readOnly = true)
 	public List<TaskResponse> findByStatus(String status) {
 		TaskStatus parsed = parseStatus(status);
 		return taskRepository.findByStatusOrderByPositionAsc(parsed).stream()
-				.map(task -> toResponse(task, null))
+				.map(task -> toResponse(task))
 				.toList();
 	}
 
@@ -136,7 +130,7 @@ public class TaskService {
 		applyFields(task, input.title(), input.description(), input.priority(), input.dueDate());
 		task.setStatus(TaskStatus.TODO);
 		task.setPosition(position);
-		return toResponse(taskRepository.save(task), null);
+		return toResponse(taskRepository.save(task));
 	}
 
 	/**
@@ -147,7 +141,7 @@ public class TaskService {
 	public TaskResponse update(long id, TaskUpdate input) {
 		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
 		applyFields(task, input.title(), input.description(), input.priority(), input.dueDate());
-		return toResponse(taskRepository.saveAndFlush(task), null);
+		return toResponse(taskRepository.saveAndFlush(task));
 	}
 
 	/**
@@ -184,7 +178,7 @@ public class TaskService {
 		}
 		renumber(targetList);
 		// すぐに書き込んで、応答に新しい更新日時を入れる
-		return toResponse(taskRepository.saveAndFlush(task), null);
+		return toResponse(taskRepository.saveAndFlush(task));
 	}
 
 	/** タスクを1件削除する（行ごと消す）。同じ列で後ろにあるタスクの順番を詰める */
@@ -211,7 +205,7 @@ public class TaskService {
 			}
 		}
 		task.setDueDate(dueDate);
-		return toResponse(taskRepository.saveAndFlush(task), null);
+		return toResponse(taskRepository.saveAndFlush(task));
 	}
 
 	/** 非表示かどうかだけを変える。列の中の順番は変えない。hidden の省略は、Controller の @Valid で 400 にしている */
@@ -219,7 +213,7 @@ public class TaskService {
 	public TaskResponse changeHidden(long id, TaskHidden input) {
 		Task task = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
 		task.setHidden(input.hidden());
-		return toResponse(taskRepository.saveAndFlush(task), null);
+		return toResponse(taskRepository.saveAndFlush(task));
 	}
 
 	/** 列の中の順番を、並びのとおり 0 からの連番にする。変わったものだけ保存する */
@@ -252,52 +246,6 @@ public class TaskService {
 		task.setDueDate(dueDate);
 	}
 
-	@Transactional
-	public List<TaskResponse> replace(List<TaskWrite> inputs) {
-		// 1件でも長すぎるタイトルがあれば、何も変えずに 400 にする（データベースに入れる前に止める）
-		if (inputs != null) {
-			for (TaskWrite input : inputs) {
-				if (input != null && input.title() != null
-						&& input.title().strip().length() > TaskInputRules.TITLE_MAX) {
-					throw new InvalidTaskException("title", TaskInputRules.TITLE_MAX + " 文字までです");
-				}
-			}
-		}
-		Map<Long, Task> byId = new LinkedHashMap<>();
-		for (Task task : taskRepository.findAll()) {
-			byId.put(task.getId(), task);
-		}
-		Set<Long> kept = new HashSet<>();
-		List<TaskResponse> responses = new ArrayList<>();
-		if (inputs != null) {
-			for (TaskWrite input : inputs) {
-				if (input == null || input.title() == null || input.title().isBlank()) {
-					continue;
-				}
-				Task task = input.id() == null ? null : byId.get(input.id());
-				if (task == null || kept.contains(task.getId())) {
-					task = new Task();
-					task.setPriority(Priority.MEDIUM);
-				}
-				task.setTitle(input.title().strip());
-				task.setDueDate(parseDate(input.dueDate()));
-				task.setStatus(parseStatus(input.status()));
-				task.setPosition(input.position() == null ? 0 : input.position());
-				if (input.hidden() != null) {
-					task.setHidden(input.hidden());
-				}
-				Task saved = taskRepository.save(task);
-				kept.add(saved.getId());
-				responses.add(toResponse(saved, input.key()));
-			}
-		}
-		List<Task> removed = byId.values().stream().filter(task -> !kept.contains(task.getId())).toList();
-		if (!removed.isEmpty()) {
-			taskRepository.deleteAll(removed);
-		}
-		return responses;
-	}
-
 	private TaskStatus parseStatus(String status) {
 		try {
 			return TaskStatus.from(status);
@@ -319,7 +267,7 @@ public class TaskService {
 		}
 	}
 
-	private TaskResponse toResponse(Task task, String key) {
+	private TaskResponse toResponse(Task task) {
 		return new TaskResponse(
 				task.getId(),
 				task.getTitle(),
@@ -330,7 +278,6 @@ public class TaskService {
 				task.getPosition(),
 				task.isHidden(),
 				task.getCreatedAt(),
-				task.getUpdatedAt(),
-				key);
+				task.getUpdatedAt());
 	}
 }

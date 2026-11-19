@@ -75,7 +75,8 @@ export function formatDateTime(value: string): string {
 export function cardFromTask(task: TaskResponse): Card {
   return {
     id: task.id ?? null,
-    key: task.key || (task.id == null ? crypto.randomUUID() : String(task.id)),
+    // 画面の中でカードを見分ける目印。保存済みなら id、まだなければ作る
+    key: task.id == null ? crypto.randomUUID() : String(task.id),
     text: task.title,
     date: validDate(task.dueDate) ? task.dueDate : "",
     hidden: task.hidden === true,

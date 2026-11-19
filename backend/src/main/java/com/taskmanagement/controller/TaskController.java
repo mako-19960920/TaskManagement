@@ -23,7 +23,6 @@ import com.taskmanagement.dto.TaskHidden;
 import com.taskmanagement.dto.TaskMove;
 import com.taskmanagement.dto.TaskResponse;
 import com.taskmanagement.dto.TaskUpdate;
-import com.taskmanagement.dto.TaskWrite;
 import com.taskmanagement.service.TaskService;
 
 @RestController
@@ -102,10 +101,5 @@ public class TaskController {
 	@PutMapping("/{id}")
 	public TaskResponse update(@PathVariable long id, @Valid @RequestBody TaskUpdate task) {
 		return taskService.update(id, task);
-	}
-
-	@PutMapping
-	public List<TaskResponse> replace(@RequestBody List<TaskWrite> tasks) {
-		return taskService.replace(tasks);
 	}
 }
