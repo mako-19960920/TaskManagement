@@ -339,7 +339,7 @@ tasksテーブルで具体例も挙げてください。
 
 テーブル：tasksテーブル
 行（レコード）：買い物のタスク1件分
-列（カラム）：id、title、completed
+列（カラム）：id、title、status
 ---
 
 ## Q23. 主キー（PRIMARY KEY）
