@@ -5,7 +5,7 @@ plugins {
 	java
 	// Java の書き方のチェック（設定は config/checkstyle/checkstyle.xml）
 	checkstyle
-	id("org.springframework.boot") version "4.1.2"
+	id("org.springframework.boot") version "4.2.0"
 	id("io.spring.dependency-management") version "1.1.7"
 	// コードの整形。gradlew format で整形し、check のときに整形済みかを確かめる（決まりは config/eclipse-formatter.prefs）
 	id("com.diffplug.spotless") version "8.11.0"
