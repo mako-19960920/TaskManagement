@@ -299,6 +299,7 @@ TaskManagement/
 | [docs/screen-design.md](docs/screen-design.md) | 画面の構成と流れ、寸法と色、入力チェック、ドラッグの手順 |
 | [docs/database-design.md](docs/database-design.md) | ER 図、テーブル定義、初期データ、接続先 |
 | [docs/tech-stack.md](docs/tech-stack.md) | 使う技術と、各技術のバージョン |
+| [docs/deploy-aws.md](docs/deploy-aws.md) | AWS へのデプロイの準備（検討中。用語の解説、安全対策、AWS CLI と Terraform の入れ方、認証と構成の候補、AI に任せるときのルール案、メンターに確認すること） |
 
 ## 困ったとき
 
